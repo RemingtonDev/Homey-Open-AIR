@@ -1,0 +1,44 @@
+{
+  "pair": {
+    "manual_entry": "Handmatig toevoegen...",
+    "credentials": {
+      "title": "Apparaatconfiguratie",
+      "host": "IP-adres",
+      "host_hint": "Voer alleen IP-adres in (geen http://)",
+      "port": "Poort",
+      "port_hint": "Standaard ESPHome API poort is 6053",
+      "auth_title": "Authenticatie (optioneel)",
+      "auth_note": "Gebruik encryptiesleutel voor ESPHome 2023.7+ of wachtwoord voor oudere versies",
+      "encryption_key": "Encryptiesleutel",
+      "encryption_key_hint": "Te vinden in je ESPHome YAML onder api: encryption: key:",
+      "password": "Wachtwoord (verouderd)",
+      "password_hint": "Voor oudere ESPHome versies met api: password:",
+      "connect": "Verbinden",
+      "connecting": "Verbinden met apparaat...",
+      "error_host_required": "IP-adres of hostnaam is vereist",
+      "error_connection": "Kan niet verbinden met apparaat"
+    }
+  },
+  "errors": {
+    "no_host": "Geen host geconfigureerd",
+    "disconnected": "Verbinding met apparaat verbroken",
+    "reconnect_failed": "Opnieuw verbinden mislukt",
+    "connection_failed": "Verbinden met apparaat mislukt",
+    "no_fan_entity": "Ventilator entiteit niet gevonden op apparaat",
+    "not_connected": "Niet verbonden met apparaat",
+    "no_humidity": "Geen vochtigheidsmeting beschikbaar"
+  },
+  "settings": {
+    "host": "IP-adres",
+    "host_hint": "Het IP-adres van je Open AIR Mini",
+    "port": "Poort",
+    "port_hint": "API poort (standaard: 6053)",
+    "encryptionKey": "Encryptiesleutel",
+    "encryptionKey_hint": "Te vinden in je ESPHome YAML onder api: encryption: key:",
+    "password": "Wachtwoord (verouderd)",
+    "password_hint": "Voor oudere ESPHome versies met api: password:",
+    "rpm_decimals_hint": "Aantal decimalen voor toerentalweergave",
+    "temperature_decimals_hint": "Aantal decimalen voor temperatuurweergave",
+    "humidity_decimals_hint": "Aantal decimalen voor vochtigheidsweergave"
+  }
+}

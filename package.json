@@ -1,0 +1,23 @@
+{
+  "name": "com.remingtondev.open-air-mini",
+  "version": "1.0.3",
+  "description": "Homey app for controlling Open AIR Mini ventilation systems via ESPHome",
+  "main": "app.js",
+  "license": "GPL-3.0-only",
+  "author": "RemingtonDev",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/RemingtonDev/Homey-Open-AIR.git"
+  },
+  "bugs": {
+    "url": "https://github.com/RemingtonDev/Homey-Open-AIR/issues"
+  },
+  "homepage": "https://github.com/RemingtonDev/Homey-Open-AIR",
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "esphome-client": "^1.2.1",
+    "esphome-api-legacy": "npm:@2colors/esphome-native-api@1.2.9"
+  }
+}

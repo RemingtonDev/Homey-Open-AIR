@@ -1,0 +1,18 @@
+{
+  "type": "number",
+  "title": {
+    "en": "RPM",
+    "nl": "Toerental",
+    "fr": "Régime"
+  },
+  "getable": true,
+  "setable": false,
+  "uiComponent": "sensor",
+  "units": {
+    "en": "rpm",
+    "nl": "rpm",
+    "fr": "tr/min"
+  },
+  "insights": true,
+  "icon": "/assets/capabilities/rpm.svg"
+}

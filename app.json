@@ -1,0 +1,618 @@
+{
+  "_comment": "This file is generated. Please edit .homeycompose/app.json instead.",
+  "id": "com.remingtondev.open-air-mini",
+  "version": "1.0.3",
+  "compatibility": ">=5.0.0",
+  "sdk": 3,
+  "platforms": [
+    "local"
+  ],
+  "name": {
+    "en": "Open AIR Mini",
+    "nl": "Open AIR Mini",
+    "fr": "Open AIR Mini"
+  },
+  "description": {
+    "en": "Control your Open AIR Mini ventilation system and monitor air quality sensors (CO2, VOC, NOx)",
+    "nl": "Bedien je Open AIR Mini ventilatiesysteem en monitor luchtkwaliteitssensoren (CO2, VOC, NOx)",
+    "fr": "Contrôlez votre système de ventilation Open AIR Mini et surveillez les capteurs de qualité de l'air (CO2, COV, NOx)"
+  },
+  "category": [
+    "climate"
+  ],
+  "permissions": [],
+  "images": {
+    "small": "/assets/images/small-v4.png",
+    "large": "/assets/images/large-v4.png",
+    "xlarge": "/assets/images/xlarge-v4.png"
+  },
+  "author": {
+    "name": "RemingtonDev",
+    "email": "julien.moysens@gmail.com"
+  },
+  "brandColor": "#2ECC71",
+  "tags": {
+    "en": [
+      "ventilation",
+      "fan",
+      "air quality",
+      "esphome",
+      "open air",
+      "ducobox",
+      "orcon"
+    ],
+    "nl": [
+      "ventilatie",
+      "ventilator",
+      "luchtkwaliteit",
+      "esphome",
+      "open air",
+      "ducobox",
+      "orcon"
+    ],
+    "fr": [
+      "ventilation",
+      "ventilateur",
+      "qualité de l'air",
+      "esphome",
+      "open air",
+      "ducobox",
+      "orcon"
+    ]
+  },
+  "source": "https://github.com/RemingtonDev/Homey-Open-AIR",
+  "bugs": {
+    "url": "https://github.com/RemingtonDev/Homey-Open-AIR/issues"
+  },
+  "homeyCommunityTopicId": 0,
+  "flow": {
+    "actions": [
+      {
+        "title": {
+          "en": "Adjust fan speed based on humidity",
+          "nl": "Pas ventilatorsnelheid aan op basis van vochtigheid",
+          "fr": "Ajuster la vitesse du ventilateur selon l'humidité"
+        },
+        "titleFormatted": {
+          "en": "Adjust fan speed based on humidity (high [[high_humidity]]% → [[high_speed]]%, medium [[medium_humidity]]% → [[medium_speed]]%, low → [[low_speed]]%)",
+          "nl": "Pas ventilatorsnelheid aan op basis van vochtigheid (hoog [[high_humidity]]% → [[high_speed]]%, midden [[medium_humidity]]% → [[medium_speed]]%, laag → [[low_speed]]%)",
+          "fr": "Ajuster la vitesse selon l'humidité (haute [[high_humidity]]% → [[high_speed]]%, moyenne [[medium_humidity]]% → [[medium_speed]]%, basse → [[low_speed]]%)"
+        },
+        "hint": {
+          "en": "Reads the device's current humidity and sets fan speed based on thresholds.",
+          "nl": "Leest de huidige luchtvochtigheid en past de ventilatorsnelheid aan op basis van drempels.",
+          "fr": "Lit l'humidité actuelle de l'appareil et règle la vitesse du ventilateur selon les seuils."
+        },
+        "args": [
+          {
+            "type": "device",
+            "name": "device",
+            "filter": "driver_id=open-air-mini"
+          },
+          {
+            "type": "number",
+            "name": "high_humidity",
+            "title": {
+              "en": "High humidity threshold (%)",
+              "nl": "Hoge vochtigheidsdrempel (%)",
+              "fr": "Seuil d'humidité haute (%)"
+            },
+            "placeholder": {
+              "en": "75"
+            },
+            "min": 0,
+            "max": 100,
+            "step": 1
+          },
+          {
+            "type": "number",
+            "name": "medium_humidity",
+            "title": {
+              "en": "Medium humidity threshold (%)",
+              "nl": "Middelhoge vochtigheidsdrempel (%)",
+              "fr": "Seuil d'humidité moyenne (%)"
+            },
+            "placeholder": {
+              "en": "55"
+            },
+            "min": 0,
+            "max": 100,
+            "step": 1
+          },
+          {
+            "type": "number",
+            "name": "high_speed",
+            "title": {
+              "en": "Fan speed at high humidity (%)",
+              "nl": "Ventilatorsnelheid bij hoge vochtigheid (%)",
+              "fr": "Vitesse du ventilateur en humidité haute (%)"
+            },
+            "placeholder": {
+              "en": "100"
+            },
+            "min": 0,
+            "max": 100,
+            "step": 1
+          },
+          {
+            "type": "number",
+            "name": "medium_speed",
+            "title": {
+              "en": "Fan speed at medium humidity (%)",
+              "nl": "Ventilatorsnelheid bij middelhoge vochtigheid (%)",
+              "fr": "Vitesse du ventilateur en humidité moyenne (%)"
+            },
+            "placeholder": {
+              "en": "60"
+            },
+            "min": 0,
+            "max": 100,
+            "step": 1
+          },
+          {
+            "type": "number",
+            "name": "low_speed",
+            "title": {
+              "en": "Fan speed below medium humidity (%)",
+              "nl": "Ventilatorsnelheid onder middelhoge vochtigheid (%)",
+              "fr": "Vitesse du ventilateur sous humidité moyenne (%)"
+            },
+            "placeholder": {
+              "en": "25"
+            },
+            "min": 0,
+            "max": 100,
+            "step": 1
+          }
+        ],
+        "id": "adjust-fan-speed-humidity"
+      }
+    ]
+  },
+  "drivers": [
+    {
+      "name": {
+        "en": "Open AIR Mini",
+        "nl": "Open AIR Mini",
+        "fr": "Open AIR Mini"
+      },
+      "class": "fan",
+      "capabilities": [
+        "dim",
+        "onoff",
+        "measure_humidity",
+        "measure_rpm",
+        "measure_temperature"
+      ],
+      "capabilitiesOptions": {
+        "dim": {
+          "title": {
+            "en": "Fan Speed",
+            "nl": "Ventilatorsnelheid",
+            "fr": "Vitesse du ventilateur"
+          },
+          "min": 0,
+          "max": 1,
+          "step": 0.01
+        },
+        "measure_temperature": {
+          "decimals": 1
+        },
+        "measure_humidity": {
+          "decimals": 1
+        },
+        "onoff": {
+          "title": {
+            "en": "Fan",
+            "nl": "Ventilator",
+            "fr": "Ventilateur"
+          },
+          "quickAction": false
+        }
+      },
+      "platforms": [
+        "local"
+      ],
+      "connectivity": [
+        "lan"
+      ],
+      "discovery": "open-air",
+      "pair": [
+        {
+          "id": "list_devices",
+          "template": "list_devices",
+          "options": {
+            "singular": false
+          },
+          "navigation": {
+            "next": "credentials"
+          }
+        },
+        {
+          "id": "credentials"
+        },
+        {
+          "id": "add_devices",
+          "template": "add_devices"
+        }
+      ],
+      "repair": [
+        {
+          "id": "credentials"
+        }
+      ],
+      "settings": [
+        {
+          "type": "group",
+          "label": {
+            "en": "Display",
+            "nl": "Weergave",
+            "fr": "Affichage"
+          },
+          "children": [
+            {
+              "id": "rpm_decimals",
+              "type": "dropdown",
+              "label": {
+                "en": "RPM Decimals",
+                "nl": "Toerental decimalen",
+                "fr": "Décimales RPM"
+              },
+              "value": "0",
+              "values": [
+                {
+                  "id": "0",
+                  "label": {
+                    "en": "0",
+                    "nl": "0",
+                    "fr": "0"
+                  }
+                },
+                {
+                  "id": "1",
+                  "label": {
+                    "en": "1",
+                    "nl": "1",
+                    "fr": "1"
+                  }
+                },
+                {
+                  "id": "2",
+                  "label": {
+                    "en": "2",
+                    "nl": "2",
+                    "fr": "2"
+                  }
+                }
+              ]
+            },
+            {
+              "id": "temperature_decimals",
+              "type": "dropdown",
+              "label": {
+                "en": "Temperature Decimals",
+                "nl": "Temperatuur decimalen",
+                "fr": "Décimales température"
+              },
+              "value": "1",
+              "values": [
+                {
+                  "id": "0",
+                  "label": {
+                    "en": "0",
+                    "nl": "0",
+                    "fr": "0"
+                  }
+                },
+                {
+                  "id": "1",
+                  "label": {
+                    "en": "1",
+                    "nl": "1",
+                    "fr": "1"
+                  }
+                },
+                {
+                  "id": "2",
+                  "label": {
+                    "en": "2",
+                    "nl": "2",
+                    "fr": "2"
+                  }
+                }
+              ]
+            },
+            {
+              "id": "humidity_decimals",
+              "type": "dropdown",
+              "label": {
+                "en": "Humidity Decimals",
+                "nl": "Vochtigheid decimalen",
+                "fr": "Décimales humidité"
+              },
+              "value": "1",
+              "values": [
+                {
+                  "id": "0",
+                  "label": {
+                    "en": "0",
+                    "nl": "0",
+                    "fr": "0"
+                  }
+                },
+                {
+                  "id": "1",
+                  "label": {
+                    "en": "1",
+                    "nl": "1",
+                    "fr": "1"
+                  }
+                },
+                {
+                  "id": "2",
+                  "label": {
+                    "en": "2",
+                    "nl": "2",
+                    "fr": "2"
+                  }
+                }
+              ]
+            },
+            {
+              "id": "co2_decimals",
+              "type": "dropdown",
+              "label": {
+                "en": "CO2 Decimals",
+                "nl": "CO2 decimalen",
+                "fr": "Décimales CO2"
+              },
+              "value": "0",
+              "values": [
+                {
+                  "id": "0",
+                  "label": {
+                    "en": "0",
+                    "nl": "0",
+                    "fr": "0"
+                  }
+                },
+                {
+                  "id": "1",
+                  "label": {
+                    "en": "1",
+                    "nl": "1",
+                    "fr": "1"
+                  }
+                },
+                {
+                  "id": "2",
+                  "label": {
+                    "en": "2",
+                    "nl": "2",
+                    "fr": "2"
+                  }
+                }
+              ]
+            },
+            {
+              "id": "voc_decimals",
+              "type": "dropdown",
+              "label": {
+                "en": "VOC Index Decimals",
+                "nl": "VOC Index decimalen",
+                "fr": "Décimales indice COV"
+              },
+              "value": "0",
+              "values": [
+                {
+                  "id": "0",
+                  "label": {
+                    "en": "0",
+                    "nl": "0",
+                    "fr": "0"
+                  }
+                },
+                {
+                  "id": "1",
+                  "label": {
+                    "en": "1",
+                    "nl": "1",
+                    "fr": "1"
+                  }
+                },
+                {
+                  "id": "2",
+                  "label": {
+                    "en": "2",
+                    "nl": "2",
+                    "fr": "2"
+                  }
+                }
+              ]
+            },
+            {
+              "id": "nox_decimals",
+              "type": "dropdown",
+              "label": {
+                "en": "NOx Index Decimals",
+                "nl": "NOx Index decimalen",
+                "fr": "Décimales indice NOx"
+              },
+              "value": "0",
+              "values": [
+                {
+                  "id": "0",
+                  "label": {
+                    "en": "0",
+                    "nl": "0",
+                    "fr": "0"
+                  }
+                },
+                {
+                  "id": "1",
+                  "label": {
+                    "en": "1",
+                    "nl": "1",
+                    "fr": "1"
+                  }
+                },
+                {
+                  "id": "2",
+                  "label": {
+                    "en": "2",
+                    "nl": "2",
+                    "fr": "2"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "group",
+          "label": {
+            "en": "Connection",
+            "nl": "Verbinding",
+            "fr": "Connexion"
+          },
+          "children": [
+            {
+              "id": "host",
+              "type": "text",
+              "label": {
+                "en": "IP Address",
+                "nl": "IP-adres",
+                "fr": "Adresse IP"
+              },
+              "hint": {
+                "en": "The IP address of your Open AIR Mini",
+                "nl": "Het IP-adres van je Open AIR Mini",
+                "fr": "L'adresse IP de votre Open AIR Mini"
+              },
+              "value": ""
+            },
+            {
+              "id": "port",
+              "type": "number",
+              "label": {
+                "en": "Port",
+                "nl": "Poort",
+                "fr": "Port"
+              },
+              "hint": {
+                "en": "API port (default: 6053)",
+                "nl": "API poort (standaard: 6053)",
+                "fr": "Port API (par défaut : 6053)"
+              },
+              "value": 6053,
+              "min": 1,
+              "max": 65535
+            },
+            {
+              "id": "encryptionKey",
+              "type": "password",
+              "label": {
+                "en": "Encryption Key",
+                "nl": "Encryptiesleutel",
+                "fr": "Clé de chiffrement"
+              },
+              "hint": {
+                "en": "Found in your ESPHome YAML under api: encryption: key:",
+                "nl": "Te vinden in je ESPHome YAML onder api: encryption: key:",
+                "fr": "Disponible dans votre fichier YAML ESPHome sous api: encryption: key:"
+              },
+              "value": ""
+            },
+            {
+              "id": "password",
+              "type": "password",
+              "label": {
+                "en": "Password (legacy)",
+                "nl": "Wachtwoord (verouderd)",
+                "fr": "Mot de passe (ancien)"
+              },
+              "hint": {
+                "en": "For older ESPHome versions using api: password:",
+                "nl": "Voor oudere ESPHome versies met api: password:",
+                "fr": "Pour les anciennes versions ESPHome utilisant api: password:"
+              },
+              "value": ""
+            }
+          ]
+        }
+      ],
+      "images": {
+        "small": "/drivers/open-air-mini/assets/images/small-v4.png",
+        "large": "/drivers/open-air-mini/assets/images/large-v4.png",
+        "xlarge": "/drivers/open-air-mini/assets/images/xlarge-v4.png"
+      },
+      "id": "open-air-mini"
+    }
+  ],
+  "capabilities": {
+    "measure_nox": {
+      "type": "number",
+      "title": {
+        "en": "NOx Index",
+        "nl": "NOx Index",
+        "fr": "Indice NOx"
+      },
+      "getable": true,
+      "setable": false,
+      "uiComponent": "sensor",
+      "units": {
+        "en": "NOx",
+        "nl": "NOx",
+        "fr": "NOx"
+      },
+      "insights": true,
+      "icon": "/assets/capabilities/nox.svg"
+    },
+    "measure_rpm": {
+      "type": "number",
+      "title": {
+        "en": "RPM",
+        "nl": "Toerental",
+        "fr": "Régime"
+      },
+      "getable": true,
+      "setable": false,
+      "uiComponent": "sensor",
+      "units": {
+        "en": "rpm",
+        "nl": "rpm",
+        "fr": "tr/min"
+      },
+      "insights": true,
+      "icon": "/assets/capabilities/rpm.svg"
+    },
+    "measure_voc": {
+      "type": "number",
+      "title": {
+        "en": "VOC Index",
+        "nl": "VOC Index",
+        "fr": "Indice COV"
+      },
+      "getable": true,
+      "setable": false,
+      "uiComponent": "sensor",
+      "units": {
+        "en": "VOC",
+        "nl": "VOC",
+        "fr": "COV"
+      },
+      "insights": true,
+      "icon": "/assets/capabilities/voc.svg"
+    }
+  },
+  "discovery": {
+    "open-air": {
+      "type": "mdns-sd",
+      "mdns-sd": {
+        "name": "_esphomelib",
+        "protocol": "tcp"
+      },
+      "id": "{{name}}"
+    }
+  }
+}

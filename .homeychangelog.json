@@ -1,0 +1,5 @@
+{
+  "1.0.3": {
+    "en": "Initial release: ESPHome ventilation control with auto-detection for modern and legacy API versions"
+  }
+}

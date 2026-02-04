@@ -1,0 +1,67 @@
+{
+  "id": "com.remingtondev.open-air-mini",
+  "version": "1.0.3",
+  "compatibility": ">=5.0.0",
+  "sdk": 3,
+  "platforms": [
+    "local"
+  ],
+  "name": {
+    "en": "Open AIR Mini",
+    "nl": "Open AIR Mini",
+    "fr": "Open AIR Mini"
+  },
+  "description": {
+    "en": "Control your Open AIR Mini ventilation system and monitor air quality sensors (CO2, VOC, NOx)",
+    "nl": "Bedien je Open AIR Mini ventilatiesysteem en monitor luchtkwaliteitssensoren (CO2, VOC, NOx)",
+    "fr": "Contrôlez votre système de ventilation Open AIR Mini et surveillez les capteurs de qualité de l'air (CO2, COV, NOx)"
+  },
+  "category": [
+    "climate"
+  ],
+  "permissions": [],
+  "images": {
+    "small": "/assets/images/small-v4.png",
+    "large": "/assets/images/large-v4.png",
+    "xlarge": "/assets/images/xlarge-v4.png"
+  },
+  "author": {
+    "name": "RemingtonDev",
+    "email": "julien.moysens@gmail.com"
+  },
+  "brandColor": "#2ECC71",
+  "tags": {
+    "en": [
+      "ventilation",
+      "fan",
+      "air quality",
+      "esphome",
+      "open air",
+      "ducobox",
+      "orcon"
+    ],
+    "nl": [
+      "ventilatie",
+      "ventilator",
+      "luchtkwaliteit",
+      "esphome",
+      "open air",
+      "ducobox",
+      "orcon"
+    ],
+    "fr": [
+      "ventilation",
+      "ventilateur",
+      "qualité de l'air",
+      "esphome",
+      "open air",
+      "ducobox",
+      "orcon"
+    ]
+  },
+  "source": "https://github.com/RemingtonDev/Homey-Open-AIR",
+  "bugs": {
+    "url": "https://github.com/RemingtonDev/Homey-Open-AIR/issues"
+  },
+  "homeyCommunityTopicId": 0
+}

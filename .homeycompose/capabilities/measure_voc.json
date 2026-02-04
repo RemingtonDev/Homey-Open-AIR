@@ -1,0 +1,18 @@
+{
+  "type": "number",
+  "title": {
+    "en": "VOC Index",
+    "nl": "VOC Index",
+    "fr": "Indice COV"
+  },
+  "getable": true,
+  "setable": false,
+  "uiComponent": "sensor",
+  "units": {
+    "en": "VOC",
+    "nl": "VOC",
+    "fr": "COV"
+  },
+  "insights": true,
+  "icon": "/assets/capabilities/voc.svg"
+}

@@ -1,0 +1,89 @@
+{
+  "title": {
+    "en": "Adjust fan speed based on humidity",
+    "nl": "Pas ventilatorsnelheid aan op basis van vochtigheid",
+    "fr": "Ajuster la vitesse du ventilateur selon l'humidité"
+  },
+  "titleFormatted": {
+    "en": "Adjust fan speed based on humidity (high [[high_humidity]]% → [[high_speed]]%, medium [[medium_humidity]]% → [[medium_speed]]%, low → [[low_speed]]%)",
+    "nl": "Pas ventilatorsnelheid aan op basis van vochtigheid (hoog [[high_humidity]]% → [[high_speed]]%, midden [[medium_humidity]]% → [[medium_speed]]%, laag → [[low_speed]]%)",
+    "fr": "Ajuster la vitesse selon l'humidité (haute [[high_humidity]]% → [[high_speed]]%, moyenne [[medium_humidity]]% → [[medium_speed]]%, basse → [[low_speed]]%)"
+  },
+  "hint": {
+    "en": "Reads the device's current humidity and sets fan speed based on thresholds.",
+    "nl": "Leest de huidige luchtvochtigheid en past de ventilatorsnelheid aan op basis van drempels.",
+    "fr": "Lit l'humidité actuelle de l'appareil et règle la vitesse du ventilateur selon les seuils."
+  },
+  "args": [
+    {
+      "type": "device",
+      "name": "device",
+      "filter": "driver_id=open-air-mini"
+    },
+    {
+      "type": "number",
+      "name": "high_humidity",
+      "title": {
+        "en": "High humidity threshold (%)",
+        "nl": "Hoge vochtigheidsdrempel (%)",
+        "fr": "Seuil d'humidité haute (%)"
+      },
+      "placeholder": { "en": "75" },
+      "min": 0,
+      "max": 100,
+      "step": 1
+    },
+    {
+      "type": "number",
+      "name": "medium_humidity",
+      "title": {
+        "en": "Medium humidity threshold (%)",
+        "nl": "Middelhoge vochtigheidsdrempel (%)",
+        "fr": "Seuil d'humidité moyenne (%)"
+      },
+      "placeholder": { "en": "55" },
+      "min": 0,
+      "max": 100,
+      "step": 1
+    },
+    {
+      "type": "number",
+      "name": "high_speed",
+      "title": {
+        "en": "Fan speed at high humidity (%)",
+        "nl": "Ventilatorsnelheid bij hoge vochtigheid (%)",
+        "fr": "Vitesse du ventilateur en humidité haute (%)"
+      },
+      "placeholder": { "en": "100" },
+      "min": 0,
+      "max": 100,
+      "step": 1
+    },
+    {
+      "type": "number",
+      "name": "medium_speed",
+      "title": {
+        "en": "Fan speed at medium humidity (%)",
+        "nl": "Ventilatorsnelheid bij middelhoge vochtigheid (%)",
+        "fr": "Vitesse du ventilateur en humidité moyenne (%)"
+      },
+      "placeholder": { "en": "60" },
+      "min": 0,
+      "max": 100,
+      "step": 1
+    },
+    {
+      "type": "number",
+      "name": "low_speed",
+      "title": {
+        "en": "Fan speed below medium humidity (%)",
+        "nl": "Ventilatorsnelheid onder middelhoge vochtigheid (%)",
+        "fr": "Vitesse du ventilateur sous humidité moyenne (%)"
+      },
+      "placeholder": { "en": "25" },
+      "min": 0,
+      "max": 100,
+      "step": 1
+    }
+  ]
+}

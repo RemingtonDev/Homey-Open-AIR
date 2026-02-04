@@ -1,0 +1,18 @@
+{
+  "type": "number",
+  "title": {
+    "en": "NOx Index",
+    "nl": "NOx Index",
+    "fr": "Indice NOx"
+  },
+  "getable": true,
+  "setable": false,
+  "uiComponent": "sensor",
+  "units": {
+    "en": "NOx",
+    "nl": "NOx",
+    "fr": "NOx"
+  },
+  "insights": true,
+  "icon": "/assets/capabilities/nox.svg"
+}

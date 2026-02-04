@@ -1,0 +1,73 @@
+name: Validate
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Validate app.json fields
+        run: |
+          node -e "
+            const app = require('./app.json');
+            const required = ['id', 'version', 'compatibility', 'sdk', 'name', 'description', 'category', 'images', 'author'];
+            const missing = required.filter(f => !app[f]);
+            if (missing.length) { console.error('Missing app.json fields:', missing.join(', ')); process.exit(1); }
+            console.log('app.json fields OK');
+          "
+
+      - name: Validate locale files
+        run: |
+          node -e "
+            const fs = require('fs');
+            const path = require('path');
+            const localeDir = './locales';
+            if (!fs.existsSync(localeDir)) { console.error('locales/ directory missing'); process.exit(1); }
+            const files = fs.readdirSync(localeDir).filter(f => f.endsWith('.json'));
+            if (files.length === 0) { console.error('No locale files found'); process.exit(1); }
+            for (const file of files) {
+              const content = fs.readFileSync(path.join(localeDir, file), 'utf8');
+              try { JSON.parse(content); console.log('Valid:', file); }
+              catch (e) { console.error('Invalid JSON in', file, e.message); process.exit(1); }
+            }
+            console.log('Locale files OK');
+          "
+
+      - name: Validate required files exist
+        run: |
+          for file in app.json app.js package.json README.txt README.nl.txt README.fr.txt; do
+            if [ ! -f "$file" ]; then
+              echo "Missing required file: $file"
+              exit 1
+            fi
+          done
+          echo "Required files OK"
+
+      - name: Validate package.json metadata
+        run: |
+          node -e "
+            const pkg = require('./package.json');
+            const required = ['name', 'version', 'description', 'license', 'author'];
+            const missing = required.filter(f => !pkg[f]);
+            if (missing.length) { console.error('Missing package.json fields:', missing.join(', ')); process.exit(1); }
+            console.log('package.json metadata OK');
+          "
+
+      - name: Validate app.js syntax
+        run: node -c app.js

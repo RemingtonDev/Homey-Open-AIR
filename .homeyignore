@@ -1,0 +1,29 @@
+# Development files
+.git
+.gitignore
+.github
+.vscode
+.idea
+
+# Node modules (handled by Homey CLI)
+node_modules
+
+# Build artifacts
+*.log
+*.tgz
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Documentation
+README.md
+CHANGELOG.md
+LICENSE
+docs/
+
+# Test files
+test/
+tests/
+*.test.js
+*.spec.js

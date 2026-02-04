@@ -1,0 +1,44 @@
+{
+  "pair": {
+    "manual_entry": "Add manually...",
+    "credentials": {
+      "title": "Device Configuration",
+      "host": "IP Address",
+      "host_hint": "Enter IP address only (no http://)",
+      "port": "Port",
+      "port_hint": "Default ESPHome API port is 6053",
+      "auth_title": "Authentication (optional)",
+      "auth_note": "Use encryption key for ESPHome 2023.7+ or password for older versions",
+      "encryption_key": "Encryption Key",
+      "encryption_key_hint": "Found in your ESPHome YAML under api: encryption: key:",
+      "password": "Password (legacy)",
+      "password_hint": "For older ESPHome versions using api: password:",
+      "connect": "Connect",
+      "connecting": "Connecting to device...",
+      "error_host_required": "IP address or hostname is required",
+      "error_connection": "Failed to connect to device"
+    }
+  },
+  "errors": {
+    "no_host": "No host configured",
+    "disconnected": "Device disconnected",
+    "reconnect_failed": "Failed to reconnect to device",
+    "connection_failed": "Failed to connect to device",
+    "no_fan_entity": "Fan entity not found on device",
+    "not_connected": "Not connected to device",
+    "no_humidity": "No humidity reading available"
+  },
+  "settings": {
+    "host": "IP Address",
+    "host_hint": "The IP address of your Open AIR Mini",
+    "port": "Port",
+    "port_hint": "API port (default: 6053)",
+    "encryptionKey": "Encryption Key",
+    "encryptionKey_hint": "Found in your ESPHome YAML under api: encryption: key:",
+    "password": "Password (legacy)",
+    "password_hint": "For older ESPHome versions using api: password:",
+    "rpm_decimals_hint": "Number of decimal places for RPM display",
+    "temperature_decimals_hint": "Number of decimal places for temperature display",
+    "humidity_decimals_hint": "Number of decimal places for humidity display"
+  }
+}
