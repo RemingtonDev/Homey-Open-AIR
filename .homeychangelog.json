@@ -1,5 +1,8 @@
 {
   "1.0.3": {
     "en": "Initial release: ESPHome ventilation control with auto-detection for modern and legacy API versions"
+  },
+  "1.0.5": {
+    "en": "Improved app description, README, and images for App Store compliance."
   }
 }
