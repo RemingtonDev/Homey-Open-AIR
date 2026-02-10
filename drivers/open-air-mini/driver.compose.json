@@ -176,8 +176,8 @@
     }
   ],
   "images": {
-    "small": "/drivers/open-air-mini/assets/images/small-v4.png",
-    "large": "/drivers/open-air-mini/assets/images/large-v4.png",
-    "xlarge": "/drivers/open-air-mini/assets/images/xlarge-v4.png"
+    "small": "/drivers/open-air-mini/assets/images/small.png",
+    "large": "/drivers/open-air-mini/assets/images/large.png",
+    "xlarge": "/drivers/open-air-mini/assets/images/xlarge.png"
   }
 }

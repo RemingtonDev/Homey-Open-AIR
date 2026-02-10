@@ -17,10 +17,13 @@ node_modules
 Thumbs.db
 
 # Documentation
-README.md
 CHANGELOG.md
 LICENSE
+DOCS.md
 docs/
+
+# Scripts
+generate_images.py
 
 # Test files
 test/

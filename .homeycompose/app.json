@@ -1,6 +1,6 @@
 {
   "id": "com.remingtondev.open-air-mini",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "compatibility": ">=5.0.0",
   "sdk": 3,
   "platforms": [
@@ -12,18 +12,18 @@
     "fr": "Open AIR Mini"
   },
   "description": {
-    "en": "Control your Open AIR Mini ventilation system and monitor air quality sensors (CO2, VOC, NOx)",
-    "nl": "Bedien je Open AIR Mini ventilatiesysteem en monitor luchtkwaliteitssensoren (CO2, VOC, NOx)",
-    "fr": "Contrôlez votre système de ventilation Open AIR Mini et surveillez les capteurs de qualité de l'air (CO2, COV, NOx)"
+    "en": "Breathe smarter with Open AIR Mini",
+    "nl": "Adem slimmer met Open AIR Mini",
+    "fr": "Respirez plus intelligemment avec Open AIR Mini"
   },
   "category": [
     "climate"
   ],
   "permissions": [],
   "images": {
-    "small": "/assets/images/small-v4.png",
-    "large": "/assets/images/large-v4.png",
-    "xlarge": "/assets/images/xlarge-v4.png"
+    "small": "/assets/images/small.png",
+    "large": "/assets/images/large.png",
+    "xlarge": "/assets/images/xlarge.png"
   },
   "author": {
     "name": "RemingtonDev",
