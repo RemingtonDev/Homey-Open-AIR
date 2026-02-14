@@ -1,0 +1,37 @@
+{
+  "title": {
+    "en": "Set valve position",
+    "nl": "Stel kleppositie in",
+    "fr": "Definir la position de la vanne"
+  },
+  "titleFormatted": {
+    "en": "Set valve to [[position]]%",
+    "nl": "Stel klep in op [[position]]%",
+    "fr": "Regler la vanne a [[position]]%"
+  },
+  "hint": {
+    "en": "Sets the valve to a specific opening percentage.",
+    "nl": "Stelt de klep in op een specifiek openingspercentage.",
+    "fr": "Regle la vanne sur un pourcentage d'ouverture specifique."
+  },
+  "args": [
+    {
+      "type": "device",
+      "name": "device",
+      "filter": "driver_id=open-air-valve"
+    },
+    {
+      "type": "number",
+      "name": "position",
+      "title": {
+        "en": "Position (%)",
+        "nl": "Positie (%)",
+        "fr": "Position (%)"
+      },
+      "placeholder": { "en": "50" },
+      "min": 0,
+      "max": 100,
+      "step": 1
+    }
+  ]
+}

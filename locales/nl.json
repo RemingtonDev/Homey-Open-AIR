@@ -16,7 +16,8 @@
       "connect": "Verbinden",
       "connecting": "Verbinden met apparaat...",
       "error_host_required": "IP-adres of hostnaam is vereist",
-      "error_connection": "Kan niet verbinden met apparaat"
+      "error_connection": "Kan niet verbinden met apparaat",
+      "error_wrong_device_type": "Dit apparaat is niet compatibel met dit stuurprogramma. Gebruik het juiste stuurprogramma voor je apparaat."
     }
   },
   "errors": {
@@ -26,11 +27,13 @@
     "connection_failed": "Verbinden met apparaat mislukt",
     "no_fan_entity": "Ventilator entiteit niet gevonden op apparaat",
     "not_connected": "Niet verbonden met apparaat",
-    "no_humidity": "Geen vochtigheidsmeting beschikbaar"
+    "no_humidity": "Geen vochtigheidsmeting beschikbaar",
+    "no_valve_entity": "Klep-entiteit niet gevonden op apparaat",
+    "no_rehome_button": "Herkalibreerknop niet gevonden op apparaat"
   },
   "settings": {
     "host": "IP-adres",
-    "host_hint": "Het IP-adres van je Open AIR Mini",
+    "host_hint": "Het IP-adres van je Open AIR apparaat",
     "port": "Poort",
     "port_hint": "API poort (standaard: 6053)",
     "encryptionKey": "Encryptiesleutel",

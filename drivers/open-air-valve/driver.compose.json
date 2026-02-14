@@ -1,0 +1,172 @@
+{
+  "name": {
+    "en": "Open AIR Valve",
+    "nl": "Open AIR Klep",
+    "fr": "Open AIR Vanne"
+  },
+  "class": "blinds",
+  "capabilities": [
+    "windowcoverings_set",
+    "windowcoverings_state",
+    "measure_valve_position",
+    "measure_valve_closed",
+    "measure_temperature",
+    "measure_humidity"
+  ],
+  "capabilitiesOptions": {
+    "windowcoverings_set": {
+      "title": {
+        "en": "Valve Capacity",
+        "nl": "Klepcapaciteit",
+        "fr": "Capacite de la vanne"
+      },
+      "min": 0,
+      "max": 1,
+      "step": 0.01
+    },
+    "windowcoverings_state": {
+      "title": {
+        "en": "Valve Control",
+        "nl": "Klepbediening",
+        "fr": "Controle de la vanne"
+      }
+    },
+    "measure_temperature": {
+      "decimals": 1
+    },
+    "measure_humidity": {
+      "decimals": 1
+    }
+  },
+  "platforms": ["local"],
+  "connectivity": ["lan"],
+  "discovery": "open-air",
+  "pair": [
+    {
+      "id": "list_devices",
+      "template": "list_devices",
+      "options": {
+        "singular": false
+      },
+      "navigation": {
+        "next": "credentials"
+      }
+    },
+    {
+      "id": "credentials"
+    },
+    {
+      "id": "add_devices",
+      "template": "add_devices"
+    }
+  ],
+  "repair": [
+    {
+      "id": "credentials"
+    }
+  ],
+  "settings": [
+    {
+      "type": "group",
+      "label": { "en": "Display", "nl": "Weergave", "fr": "Affichage" },
+      "children": [
+        {
+          "id": "temperature_decimals",
+          "type": "dropdown",
+          "label": { "en": "Temperature Decimals", "nl": "Temperatuur decimalen", "fr": "Decimales temperature" },
+          "value": "1",
+          "values": [
+            { "id": "0", "label": { "en": "0", "nl": "0", "fr": "0" } },
+            { "id": "1", "label": { "en": "1", "nl": "1", "fr": "1" } },
+            { "id": "2", "label": { "en": "2", "nl": "2", "fr": "2" } }
+          ]
+        },
+        {
+          "id": "humidity_decimals",
+          "type": "dropdown",
+          "label": { "en": "Humidity Decimals", "nl": "Vochtigheid decimalen", "fr": "Decimales humidite" },
+          "value": "1",
+          "values": [
+            { "id": "0", "label": { "en": "0", "nl": "0", "fr": "0" } },
+            { "id": "1", "label": { "en": "1", "nl": "1", "fr": "1" } },
+            { "id": "2", "label": { "en": "2", "nl": "2", "fr": "2" } }
+          ]
+        },
+        {
+          "id": "co2_decimals",
+          "type": "dropdown",
+          "label": { "en": "CO2 Decimals", "nl": "CO2 decimalen", "fr": "Decimales CO2" },
+          "value": "0",
+          "values": [
+            { "id": "0", "label": { "en": "0", "nl": "0", "fr": "0" } },
+            { "id": "1", "label": { "en": "1", "nl": "1", "fr": "1" } },
+            { "id": "2", "label": { "en": "2", "nl": "2", "fr": "2" } }
+          ]
+        },
+        {
+          "id": "voc_decimals",
+          "type": "dropdown",
+          "label": { "en": "VOC Index Decimals", "nl": "VOC Index decimalen", "fr": "Decimales indice COV" },
+          "value": "0",
+          "values": [
+            { "id": "0", "label": { "en": "0", "nl": "0", "fr": "0" } },
+            { "id": "1", "label": { "en": "1", "nl": "1", "fr": "1" } },
+            { "id": "2", "label": { "en": "2", "nl": "2", "fr": "2" } }
+          ]
+        },
+        {
+          "id": "nox_decimals",
+          "type": "dropdown",
+          "label": { "en": "NOx Index Decimals", "nl": "NOx Index decimalen", "fr": "Decimales indice NOx" },
+          "value": "0",
+          "values": [
+            { "id": "0", "label": { "en": "0", "nl": "0", "fr": "0" } },
+            { "id": "1", "label": { "en": "1", "nl": "1", "fr": "1" } },
+            { "id": "2", "label": { "en": "2", "nl": "2", "fr": "2" } }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "group",
+      "label": { "en": "Connection", "nl": "Verbinding", "fr": "Connexion" },
+      "children": [
+        {
+          "id": "host",
+          "type": "text",
+          "label": { "en": "IP Address", "nl": "IP-adres", "fr": "Adresse IP" },
+          "hint": { "en": "The IP address of your Open AIR Valve", "nl": "Het IP-adres van je Open AIR Klep", "fr": "L'adresse IP de votre Open AIR Vanne" },
+          "value": ""
+        },
+        {
+          "id": "port",
+          "type": "number",
+          "label": { "en": "Port", "nl": "Poort", "fr": "Port" },
+          "hint": { "en": "API port (default: 6053)", "nl": "API poort (standaard: 6053)", "fr": "Port API (par defaut : 6053)" },
+          "value": 6053,
+          "min": 1,
+          "max": 65535
+        },
+        {
+          "id": "encryptionKey",
+          "type": "password",
+          "label": { "en": "Encryption Key", "nl": "Encryptiesleutel", "fr": "Cle de chiffrement" },
+          "hint": { "en": "Found in your ESPHome YAML under api: encryption: key:", "nl": "Te vinden in je ESPHome YAML onder api: encryption: key:", "fr": "Disponible dans votre fichier YAML ESPHome sous api: encryption: key:" },
+          "value": ""
+        },
+        {
+          "id": "password",
+          "type": "password",
+          "label": { "en": "Password (legacy)", "nl": "Wachtwoord (verouderd)", "fr": "Mot de passe (ancien)" },
+          "hint": { "en": "For older ESPHome versions using api: password:", "nl": "Voor oudere ESPHome versies met api: password:", "fr": "Pour les anciennes versions ESPHome utilisant api: password:" },
+          "value": ""
+        }
+      ]
+    }
+  ],
+  "images": {
+    "small": "/drivers/open-air-valve/assets/images/small.png",
+    "large": "/drivers/open-air-valve/assets/images/large.png",
+    "xlarge": "/drivers/open-air-valve/assets/images/xlarge.png"
+  }
+}

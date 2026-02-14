@@ -8,14 +8,14 @@
     "local"
   ],
   "name": {
-    "en": "Open AIR Mini",
-    "nl": "Open AIR Mini",
-    "fr": "Open AIR Mini"
+    "en": "Open AIR",
+    "nl": "Open AIR",
+    "fr": "Open AIR"
   },
   "description": {
-    "en": "Breathe smarter with Open AIR Mini",
-    "nl": "Adem slimmer met Open AIR Mini",
-    "fr": "Respirez plus intelligemment avec Open AIR Mini"
+    "en": "Control your Open AIR ventilation devices",
+    "nl": "Bedien je Open AIR ventilatie-apparaten",
+    "fr": "Controlez vos appareils de ventilation Open AIR"
   },
   "category": [
     "climate"
@@ -35,6 +35,7 @@
     "en": [
       "ventilation",
       "fan",
+      "valve",
       "air quality",
       "esphome",
       "open air",
@@ -44,6 +45,7 @@
     "nl": [
       "ventilatie",
       "ventilator",
+      "klep",
       "luchtkwaliteit",
       "esphome",
       "open air",
@@ -53,6 +55,7 @@
     "fr": [
       "ventilation",
       "ventilateur",
+      "vanne",
       "qualité de l'air",
       "esphome",
       "open air",
@@ -167,6 +170,126 @@
           }
         ],
         "id": "adjust-fan-speed-humidity"
+      },
+      {
+        "title": {
+          "en": "Close valve",
+          "nl": "Sluit klep",
+          "fr": "Fermer la vanne"
+        },
+        "hint": {
+          "en": "Closes the valve to 0%.",
+          "nl": "Sluit de klep naar 0%.",
+          "fr": "Ferme la vanne a 0%."
+        },
+        "args": [
+          {
+            "type": "device",
+            "name": "device",
+            "filter": "driver_id=open-air-valve"
+          }
+        ],
+        "id": "close-valve"
+      },
+      {
+        "title": {
+          "en": "Open valve fully",
+          "nl": "Open klep volledig",
+          "fr": "Ouvrir la vanne completement"
+        },
+        "hint": {
+          "en": "Opens the valve to 100%.",
+          "nl": "Opent de klep naar 100%.",
+          "fr": "Ouvre la vanne a 100%."
+        },
+        "args": [
+          {
+            "type": "device",
+            "name": "device",
+            "filter": "driver_id=open-air-valve"
+          }
+        ],
+        "id": "open-valve"
+      },
+      {
+        "title": {
+          "en": "Re-home valve (recalibrate)",
+          "nl": "Klep opnieuw kalibreren",
+          "fr": "Recalibrer la vanne"
+        },
+        "hint": {
+          "en": "Triggers the re-home (recalibration) sequence on the valve.",
+          "nl": "Start de herkalibratie van de klep.",
+          "fr": "Declenche la sequence de recalibration de la vanne."
+        },
+        "args": [
+          {
+            "type": "device",
+            "name": "device",
+            "filter": "driver_id=open-air-valve"
+          }
+        ],
+        "id": "rehome-valve"
+      },
+      {
+        "title": {
+          "en": "Set valve position",
+          "nl": "Stel kleppositie in",
+          "fr": "Definir la position de la vanne"
+        },
+        "titleFormatted": {
+          "en": "Set valve to [[position]]%",
+          "nl": "Stel klep in op [[position]]%",
+          "fr": "Regler la vanne a [[position]]%"
+        },
+        "hint": {
+          "en": "Sets the valve to a specific opening percentage.",
+          "nl": "Stelt de klep in op een specifiek openingspercentage.",
+          "fr": "Regle la vanne sur un pourcentage d'ouverture specifique."
+        },
+        "args": [
+          {
+            "type": "device",
+            "name": "device",
+            "filter": "driver_id=open-air-valve"
+          },
+          {
+            "type": "number",
+            "name": "position",
+            "title": {
+              "en": "Position (%)",
+              "nl": "Positie (%)",
+              "fr": "Position (%)"
+            },
+            "placeholder": {
+              "en": "50"
+            },
+            "min": 0,
+            "max": 100,
+            "step": 1
+          }
+        ],
+        "id": "set-valve-position"
+      },
+      {
+        "title": {
+          "en": "Stop valve movement",
+          "nl": "Stop klepbeweging",
+          "fr": "Arreter le mouvement de la vanne"
+        },
+        "hint": {
+          "en": "Stops the valve at its current position.",
+          "nl": "Stopt de klep op de huidige positie.",
+          "fr": "Arrete la vanne a sa position actuelle."
+        },
+        "args": [
+          {
+            "type": "device",
+            "name": "device",
+            "filter": "driver_id=open-air-valve"
+          }
+        ],
+        "id": "stop-valve"
       }
     ]
   },
@@ -549,6 +672,348 @@
         "xlarge": "/drivers/open-air-mini/assets/images/xlarge.png"
       },
       "id": "open-air-mini"
+    },
+    {
+      "name": {
+        "en": "Open AIR Valve",
+        "nl": "Open AIR Klep",
+        "fr": "Open AIR Vanne"
+      },
+      "class": "blinds",
+      "capabilities": [
+        "windowcoverings_set",
+        "windowcoverings_state",
+        "measure_valve_position",
+        "measure_valve_closed",
+        "measure_temperature",
+        "measure_humidity"
+      ],
+      "capabilitiesOptions": {
+        "windowcoverings_set": {
+          "title": {
+            "en": "Valve Capacity",
+            "nl": "Klepcapaciteit",
+            "fr": "Capacite de la vanne"
+          },
+          "min": 0,
+          "max": 1,
+          "step": 0.01
+        },
+        "windowcoverings_state": {
+          "title": {
+            "en": "Valve Control",
+            "nl": "Klepbediening",
+            "fr": "Controle de la vanne"
+          }
+        },
+        "measure_temperature": {
+          "decimals": 1
+        },
+        "measure_humidity": {
+          "decimals": 1
+        }
+      },
+      "platforms": [
+        "local"
+      ],
+      "connectivity": [
+        "lan"
+      ],
+      "discovery": "open-air",
+      "pair": [
+        {
+          "id": "list_devices",
+          "template": "list_devices",
+          "options": {
+            "singular": false
+          },
+          "navigation": {
+            "next": "credentials"
+          }
+        },
+        {
+          "id": "credentials"
+        },
+        {
+          "id": "add_devices",
+          "template": "add_devices"
+        }
+      ],
+      "repair": [
+        {
+          "id": "credentials"
+        }
+      ],
+      "settings": [
+        {
+          "type": "group",
+          "label": {
+            "en": "Display",
+            "nl": "Weergave",
+            "fr": "Affichage"
+          },
+          "children": [
+            {
+              "id": "temperature_decimals",
+              "type": "dropdown",
+              "label": {
+                "en": "Temperature Decimals",
+                "nl": "Temperatuur decimalen",
+                "fr": "Decimales temperature"
+              },
+              "value": "1",
+              "values": [
+                {
+                  "id": "0",
+                  "label": {
+                    "en": "0",
+                    "nl": "0",
+                    "fr": "0"
+                  }
+                },
+                {
+                  "id": "1",
+                  "label": {
+                    "en": "1",
+                    "nl": "1",
+                    "fr": "1"
+                  }
+                },
+                {
+                  "id": "2",
+                  "label": {
+                    "en": "2",
+                    "nl": "2",
+                    "fr": "2"
+                  }
+                }
+              ]
+            },
+            {
+              "id": "humidity_decimals",
+              "type": "dropdown",
+              "label": {
+                "en": "Humidity Decimals",
+                "nl": "Vochtigheid decimalen",
+                "fr": "Decimales humidite"
+              },
+              "value": "1",
+              "values": [
+                {
+                  "id": "0",
+                  "label": {
+                    "en": "0",
+                    "nl": "0",
+                    "fr": "0"
+                  }
+                },
+                {
+                  "id": "1",
+                  "label": {
+                    "en": "1",
+                    "nl": "1",
+                    "fr": "1"
+                  }
+                },
+                {
+                  "id": "2",
+                  "label": {
+                    "en": "2",
+                    "nl": "2",
+                    "fr": "2"
+                  }
+                }
+              ]
+            },
+            {
+              "id": "co2_decimals",
+              "type": "dropdown",
+              "label": {
+                "en": "CO2 Decimals",
+                "nl": "CO2 decimalen",
+                "fr": "Decimales CO2"
+              },
+              "value": "0",
+              "values": [
+                {
+                  "id": "0",
+                  "label": {
+                    "en": "0",
+                    "nl": "0",
+                    "fr": "0"
+                  }
+                },
+                {
+                  "id": "1",
+                  "label": {
+                    "en": "1",
+                    "nl": "1",
+                    "fr": "1"
+                  }
+                },
+                {
+                  "id": "2",
+                  "label": {
+                    "en": "2",
+                    "nl": "2",
+                    "fr": "2"
+                  }
+                }
+              ]
+            },
+            {
+              "id": "voc_decimals",
+              "type": "dropdown",
+              "label": {
+                "en": "VOC Index Decimals",
+                "nl": "VOC Index decimalen",
+                "fr": "Decimales indice COV"
+              },
+              "value": "0",
+              "values": [
+                {
+                  "id": "0",
+                  "label": {
+                    "en": "0",
+                    "nl": "0",
+                    "fr": "0"
+                  }
+                },
+                {
+                  "id": "1",
+                  "label": {
+                    "en": "1",
+                    "nl": "1",
+                    "fr": "1"
+                  }
+                },
+                {
+                  "id": "2",
+                  "label": {
+                    "en": "2",
+                    "nl": "2",
+                    "fr": "2"
+                  }
+                }
+              ]
+            },
+            {
+              "id": "nox_decimals",
+              "type": "dropdown",
+              "label": {
+                "en": "NOx Index Decimals",
+                "nl": "NOx Index decimalen",
+                "fr": "Decimales indice NOx"
+              },
+              "value": "0",
+              "values": [
+                {
+                  "id": "0",
+                  "label": {
+                    "en": "0",
+                    "nl": "0",
+                    "fr": "0"
+                  }
+                },
+                {
+                  "id": "1",
+                  "label": {
+                    "en": "1",
+                    "nl": "1",
+                    "fr": "1"
+                  }
+                },
+                {
+                  "id": "2",
+                  "label": {
+                    "en": "2",
+                    "nl": "2",
+                    "fr": "2"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "group",
+          "label": {
+            "en": "Connection",
+            "nl": "Verbinding",
+            "fr": "Connexion"
+          },
+          "children": [
+            {
+              "id": "host",
+              "type": "text",
+              "label": {
+                "en": "IP Address",
+                "nl": "IP-adres",
+                "fr": "Adresse IP"
+              },
+              "hint": {
+                "en": "The IP address of your Open AIR Valve",
+                "nl": "Het IP-adres van je Open AIR Klep",
+                "fr": "L'adresse IP de votre Open AIR Vanne"
+              },
+              "value": ""
+            },
+            {
+              "id": "port",
+              "type": "number",
+              "label": {
+                "en": "Port",
+                "nl": "Poort",
+                "fr": "Port"
+              },
+              "hint": {
+                "en": "API port (default: 6053)",
+                "nl": "API poort (standaard: 6053)",
+                "fr": "Port API (par defaut : 6053)"
+              },
+              "value": 6053,
+              "min": 1,
+              "max": 65535
+            },
+            {
+              "id": "encryptionKey",
+              "type": "password",
+              "label": {
+                "en": "Encryption Key",
+                "nl": "Encryptiesleutel",
+                "fr": "Cle de chiffrement"
+              },
+              "hint": {
+                "en": "Found in your ESPHome YAML under api: encryption: key:",
+                "nl": "Te vinden in je ESPHome YAML onder api: encryption: key:",
+                "fr": "Disponible dans votre fichier YAML ESPHome sous api: encryption: key:"
+              },
+              "value": ""
+            },
+            {
+              "id": "password",
+              "type": "password",
+              "label": {
+                "en": "Password (legacy)",
+                "nl": "Wachtwoord (verouderd)",
+                "fr": "Mot de passe (ancien)"
+              },
+              "hint": {
+                "en": "For older ESPHome versions using api: password:",
+                "nl": "Voor oudere ESPHome versies met api: password:",
+                "fr": "Pour les anciennes versions ESPHome utilisant api: password:"
+              },
+              "value": ""
+            }
+          ]
+        }
+      ],
+      "images": {
+        "small": "/drivers/open-air-valve/assets/images/small.png",
+        "large": "/drivers/open-air-valve/assets/images/large.png",
+        "xlarge": "/drivers/open-air-valve/assets/images/xlarge.png"
+      },
+      "id": "open-air-valve"
     }
   ],
   "capabilities": {
@@ -607,6 +1072,39 @@
       },
       "insights": true,
       "icon": "/assets/capabilities/rpm.svg"
+    },
+    "measure_valve_closed": {
+      "type": "boolean",
+      "title": {
+        "en": "Valve Closed",
+        "nl": "Klep gesloten",
+        "fr": "Vanne fermee"
+      },
+      "getable": true,
+      "setable": false,
+      "uiComponent": "sensor",
+      "insights": true,
+      "icon": "/drivers/open-air-valve/assets/icon.svg"
+    },
+    "measure_valve_position": {
+      "type": "number",
+      "title": {
+        "en": "Valve Position",
+        "nl": "Kleppositie",
+        "fr": "Position de la vanne"
+      },
+      "getable": true,
+      "setable": false,
+      "uiComponent": "sensor",
+      "units": {
+        "en": "%",
+        "nl": "%",
+        "fr": "%"
+      },
+      "min": 0,
+      "max": 100,
+      "insights": true,
+      "icon": "/drivers/open-air-valve/assets/icon.svg"
     },
     "measure_voc": {
       "type": "number",

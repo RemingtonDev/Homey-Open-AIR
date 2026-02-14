@@ -1,0 +1,19 @@
+{
+  "title": {
+    "en": "Re-home valve (recalibrate)",
+    "nl": "Klep opnieuw kalibreren",
+    "fr": "Recalibrer la vanne"
+  },
+  "hint": {
+    "en": "Triggers the re-home (recalibration) sequence on the valve.",
+    "nl": "Start de herkalibratie van de klep.",
+    "fr": "Declenche la sequence de recalibration de la vanne."
+  },
+  "args": [
+    {
+      "type": "device",
+      "name": "device",
+      "filter": "driver_id=open-air-valve"
+    }
+  ]
+}

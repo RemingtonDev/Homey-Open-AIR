@@ -16,7 +16,8 @@
       "connect": "Connect",
       "connecting": "Connecting to device...",
       "error_host_required": "IP address or hostname is required",
-      "error_connection": "Failed to connect to device"
+      "error_connection": "Failed to connect to device",
+      "error_wrong_device_type": "This device is not compatible with this driver. Please use the correct driver for your device."
     }
   },
   "errors": {
@@ -26,11 +27,13 @@
     "connection_failed": "Failed to connect to device",
     "no_fan_entity": "Fan entity not found on device",
     "not_connected": "Not connected to device",
-    "no_humidity": "No humidity reading available"
+    "no_humidity": "No humidity reading available",
+    "no_valve_entity": "Valve entity not found on device",
+    "no_rehome_button": "Re-home button not found on device"
   },
   "settings": {
     "host": "IP Address",
-    "host_hint": "The IP address of your Open AIR Mini",
+    "host_hint": "The IP address of your Open AIR device",
     "port": "Port",
     "port_hint": "API port (default: 6053)",
     "encryptionKey": "Encryption Key",

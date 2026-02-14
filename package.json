@@ -1,7 +1,7 @@
 {
   "name": "com.remingtondev.open-air-mini",
   "version": "1.0.3",
-  "description": "Homey app for controlling Open AIR Mini ventilation systems via ESPHome",
+  "description": "Homey app for controlling Open AIR ventilation devices via ESPHome",
   "main": "app.js",
   "license": "GPL-3.0-only",
   "author": "RemingtonDev",

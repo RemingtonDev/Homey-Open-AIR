@@ -16,7 +16,8 @@
       "connect": "Connecter",
       "connecting": "Connexion à l'appareil...",
       "error_host_required": "L'adresse IP ou le nom d'hôte est requis",
-      "error_connection": "Échec de la connexion à l'appareil"
+      "error_connection": "Échec de la connexion à l'appareil",
+      "error_wrong_device_type": "Cet appareil n'est pas compatible avec ce pilote. Veuillez utiliser le bon pilote pour votre appareil."
     }
   },
   "errors": {
@@ -26,11 +27,13 @@
     "connection_failed": "Échec de la connexion à l'appareil",
     "no_fan_entity": "Entité ventilateur introuvable sur l'appareil",
     "not_connected": "Non connecté à l'appareil",
-    "no_humidity": "Aucune mesure d'humidité disponible"
+    "no_humidity": "Aucune mesure d'humidité disponible",
+    "no_valve_entity": "Entite vanne introuvable sur l'appareil",
+    "no_rehome_button": "Bouton de recalibration introuvable sur l'appareil"
   },
   "settings": {
     "host": "Adresse IP",
-    "host_hint": "L'adresse IP de votre Open AIR Mini",
+    "host_hint": "L'adresse IP de votre appareil Open AIR",
     "port": "Port",
     "port_hint": "Port API (par défaut : 6053)",
     "encryptionKey": "Clé de chiffrement",

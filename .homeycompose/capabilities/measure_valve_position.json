@@ -1,0 +1,16 @@
+{
+  "type": "number",
+  "title": {
+    "en": "Valve Position",
+    "nl": "Kleppositie",
+    "fr": "Position de la vanne"
+  },
+  "getable": true,
+  "setable": false,
+  "uiComponent": "sensor",
+  "units": { "en": "%", "nl": "%", "fr": "%" },
+  "min": 0,
+  "max": 100,
+  "insights": true,
+  "icon": "/drivers/open-air-valve/assets/icon.svg"
+}

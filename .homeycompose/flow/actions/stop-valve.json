@@ -1,0 +1,19 @@
+{
+  "title": {
+    "en": "Stop valve movement",
+    "nl": "Stop klepbeweging",
+    "fr": "Arreter le mouvement de la vanne"
+  },
+  "hint": {
+    "en": "Stops the valve at its current position.",
+    "nl": "Stopt de klep op de huidige positie.",
+    "fr": "Arrete la vanne a sa position actuelle."
+  },
+  "args": [
+    {
+      "type": "device",
+      "name": "device",
+      "filter": "driver_id=open-air-valve"
+    }
+  ]
+}

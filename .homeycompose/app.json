@@ -7,14 +7,14 @@
     "local"
   ],
   "name": {
-    "en": "Open AIR Mini",
-    "nl": "Open AIR Mini",
-    "fr": "Open AIR Mini"
+    "en": "Open AIR",
+    "nl": "Open AIR",
+    "fr": "Open AIR"
   },
   "description": {
-    "en": "Breathe smarter with Open AIR Mini",
-    "nl": "Adem slimmer met Open AIR Mini",
-    "fr": "Respirez plus intelligemment avec Open AIR Mini"
+    "en": "Control your Open AIR ventilation devices",
+    "nl": "Bedien je Open AIR ventilatie-apparaten",
+    "fr": "Controlez vos appareils de ventilation Open AIR"
   },
   "category": [
     "climate"
@@ -34,6 +34,7 @@
     "en": [
       "ventilation",
       "fan",
+      "valve",
       "air quality",
       "esphome",
       "open air",
@@ -43,6 +44,7 @@
     "nl": [
       "ventilatie",
       "ventilator",
+      "klep",
       "luchtkwaliteit",
       "esphome",
       "open air",
@@ -52,6 +54,7 @@
     "fr": [
       "ventilation",
       "ventilateur",
+      "vanne",
       "qualité de l'air",
       "esphome",
       "open air",

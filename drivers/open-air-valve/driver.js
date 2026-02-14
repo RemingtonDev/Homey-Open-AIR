@@ -4,22 +4,17 @@ const Homey = require('homey');
 const EspHomeClient = require('../../lib/EspHomeClient');
 const { ESPHOME } = require('../../lib/constants');
 
-class OpenAirMiniDriver extends Homey.Driver {
+class OpenAirValveDriver extends Homey.Driver {
 
   async onInit() {
-    this.log('Open AIR Mini driver has been initialized');
+    this.log('Open AIR Valve driver has been initialized');
   }
 
-  /**
-   * Called when pairing starts - returns list of discovered devices
-   * Note: "Add manually..." option removed - credentials view is used as fallback when no devices found
-   */
   async onPairListDevices() {
     this.log('Listing devices for pairing...');
 
     const devices = [];
 
-    // Get devices from Homey's mDNS discovery
     const discoveryStrategy = this.getDiscoveryStrategy();
     const discoveryResults = discoveryStrategy.getDiscoveryResults();
 
@@ -28,9 +23,8 @@ class OpenAirMiniDriver extends Homey.Driver {
     for (const [id, result] of Object.entries(discoveryResults)) {
       this.log(`Processing discovered device: ${id} (${result.name || result.id} at ${result.address})`);
 
-      // ESPHome devices advertise on _esphomelib._tcp
       const device = {
-        name: result.name || result.id || 'Open AIR Mini',
+        name: result.name || result.id || 'Open AIR Valve',
         data: {
           id: result.id,
         },
@@ -47,8 +41,6 @@ class OpenAirMiniDriver extends Homey.Driver {
       devices.push(device);
     }
 
-    // If no devices discovered, we'll show an empty list
-    // The pairing flow will navigate to credentials view for manual entry
     if (devices.length === 0) {
       this.log('No devices discovered via mDNS');
     }
@@ -56,9 +48,6 @@ class OpenAirMiniDriver extends Homey.Driver {
     return devices;
   }
 
-  /**
-   * Handle the pairing session
-   */
   onPair(session) {
     let selectedDevice = null;
     let credentials = {
@@ -68,43 +57,30 @@ class OpenAirMiniDriver extends Homey.Driver {
       password: '',
     };
 
-    // Handle device selection from list
     session.setHandler('list_devices', async () => {
       const devices = await this.onPairListDevices();
       this.log(`Returning ${devices.length} devices to pairing list`);
       return devices;
     });
 
-    // Handle view changes (for logging purposes)
     session.setHandler('showView', async (viewId) => {
       this.log(`Showing view: ${viewId}`);
-      // Note: Credentials are pre-filled in list_devices_selection handler
-      // BEFORE navigation, not here (this fires after navigation starts)
     });
 
-    // Store selected device and pre-fill credentials BEFORE navigation
-    // Navigation to credentials view is handled by driver.compose.json navigation.next
     session.setHandler('list_devices_selection', async (devices) => {
       this.log('Device selected:', devices?.[0]?.name, 'at', devices?.[0]?.store?.address);
       if (devices && devices.length > 0) {
         selectedDevice = devices[0];
         this.log(`Selected device: ${selectedDevice.name} at ${selectedDevice.store?.address || 'unknown address'}`);
 
-        // Pre-fill credentials BEFORE navigation happens
-        // This ensures getCredentials returns the correct values when the form loads
         if (selectedDevice.store?.address) {
           credentials.host = selectedDevice.store.address;
           credentials.port = selectedDevice.store.port || ESPHOME.DEFAULT_PORT;
           this.log(`Pre-filled credentials: ${credentials.host}:${credentials.port}`);
         }
-
-        // DO NOT call session.showView('credentials') here!
-        // Let driver.compose.json navigation.next handle the navigation naturally
-        // Calling showView here causes double navigation and the list flashes away
       }
     });
 
-    // Handle credentials submission
     session.setHandler('getCredentials', () => {
       this.log('getCredentials called, returning:', { ...credentials, encryptionKey: credentials.encryptionKey ? '***' : '', password: credentials.password ? '***' : '' });
       return credentials;
@@ -119,7 +95,6 @@ class OpenAirMiniDriver extends Homey.Driver {
       this.log(`Testing connection to ${credentials.host}:${credentials.port}...`);
 
       try {
-        // Test connection with both encryptionKey and password support
         const result = await EspHomeClient.testConnection(
           credentials.host,
           credentials.port,
@@ -136,8 +111,8 @@ class OpenAirMiniDriver extends Homey.Driver {
           throw new Error(errorMsg);
         }
 
-        const hasFan = result.entities?.some(e => e.type === 'fan');
-        if (!hasFan) {
+        const hasValve = result.entities?.some(e => e.type === 'valve');
+        if (!hasValve) {
           throw new Error(this.homey.__('pair.credentials.error_wrong_device_type'));
         }
 
@@ -153,7 +128,6 @@ class OpenAirMiniDriver extends Homey.Driver {
       }
     });
 
-    // Create device from credentials
     session.setHandler('createDevice', async () => {
       this.log('=== createDevice called ===');
 
@@ -162,8 +136,8 @@ class OpenAirMiniDriver extends Homey.Driver {
         throw new Error(this.homey.__('pair.credentials.error_host_required'));
       }
 
-      const deviceName = selectedDevice?.name || 'Open AIR Mini';
-      const deviceId = selectedDevice?.data?.id || `open-air-${credentials.host.replace(/\./g, '-')}`;
+      const deviceName = selectedDevice?.name || 'Open AIR Valve';
+      const deviceId = selectedDevice?.data?.id || `open-air-valve-${credentials.host.replace(/\./g, '-')}`;
 
       const device = {
         name: deviceName,
@@ -189,9 +163,6 @@ class OpenAirMiniDriver extends Homey.Driver {
     });
   }
 
-  /**
-   * Handle device repair session
-   */
   onRepair(session, device) {
     session.setHandler('getCredentials', async () => {
       const store = device.getStore();
@@ -204,7 +175,6 @@ class OpenAirMiniDriver extends Homey.Driver {
     });
 
     session.setHandler('setCredentials', async (data) => {
-      // Test new credentials with both encryptionKey and password support
       const result = await EspHomeClient.testConnection(
         data.host,
         data.port,
@@ -217,13 +187,11 @@ class OpenAirMiniDriver extends Homey.Driver {
         throw new Error(result.error || this.homey.__('pair.credentials.error_connection'));
       }
 
-      // Update device store
       await device.setStoreValue('address', data.host);
       await device.setStoreValue('port', data.port);
       await device.setStoreValue('encryptionKey', data.encryptionKey || null);
       await device.setStoreValue('password', data.password || null);
 
-      // Update settings
       await device.setSettings({
         host: data.host,
         port: data.port,
@@ -231,7 +199,6 @@ class OpenAirMiniDriver extends Homey.Driver {
         password: data.password || '',
       });
 
-      // Reconnect device
       await device.reconnect();
 
       return { success: true };
@@ -240,4 +207,4 @@ class OpenAirMiniDriver extends Homey.Driver {
 
 }
 
-module.exports = OpenAirMiniDriver;
+module.exports = OpenAirValveDriver;

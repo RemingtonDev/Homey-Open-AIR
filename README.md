@@ -1,24 +1,28 @@
-# Open AIR Mini for Homey
+# Open AIR for Homey
 
 [![Homey SDK 3](https://img.shields.io/badge/Homey_SDK-3-blue)](https://developer.athom.com/)
 [![License: GPL-3.0](https://img.shields.io/github/license/RemingtonDev/Homey-Open-AIR)](LICENSE)
 [![Last commit](https://img.shields.io/github/last-commit/RemingtonDev/Homey-Open-AIR)](https://github.com/RemingtonDev/Homey-Open-AIR/commits/main)
 [![Issues](https://img.shields.io/github/issues/RemingtonDev/Homey-Open-AIR)](https://github.com/RemingtonDev/Homey-Open-AIR/issues)
 
-Control your Open AIR Mini ventilation system directly from Homey.
+Control your Open AIR Mini and Open AIR Valve devices directly from Homey.
 
 ## About
 
-The [Open AIR Mini](https://github.com/Flamingo-tech/Open-AIR/tree/main/Open%20AIR%20Mini) is an open-source, ESP32-based controller designed to bring smart control to DucoBox Silent and Orcon MVS-15xx ventilation systems. It runs ESPHome firmware and supports environmental sensors including CO2, temperature, humidity, VOC, and NOx.
+The [Open AIR](https://github.com/Flamingo-tech/Open-AIR) project provides open-source, ESP32-based controllers that run ESPHome firmware:
 
-- **Hardware project**: [GitHub](https://github.com/Flamingo-tech/Open-AIR/tree/main/Open%20AIR%20Mini)
-- **Buy on Tindie**: [Open AIR Mini](https://www.tindie.com/products/theflamingo/open-air-mini/)
+- **[Open AIR Mini](https://github.com/Flamingo-tech/Open-AIR/tree/main/Open%20AIR%20Mini)** — smart controller for DucoBox Silent and Orcon MVS-15xx ventilation systems, with environmental sensors (CO2, temperature, humidity, VOC, NOx).
+- **[Open AIR Valve](https://github.com/Flamingo-tech/Open-AIR/tree/main/Open%20AIR%20Valve)** — motorized valve controller for zone-based ventilation dampers.
+
+**Buy on Tindie**: [Open AIR Mini](https://www.tindie.com/products/theflamingo/open-air-mini/) | [Open AIR Valve](https://www.tindie.com/products/theflamingo/open-air-valve/)
 
 ## Why this app?
 
 As a proud owner of an Open AIR Mini and starting to fiddle with Homey, I wanted to see if I could build a modern, dedicated app that would enable the integration without relying on the generic ESPHome app for Homey, which is barely maintained anymore — its original developer no longer owns a Homey. This app talks directly to the Open AIR Mini over the ESPHome native API, with auto-discovery, sensor auto-detection, and support for both modern encryption and legacy authentication.
 
 ## Features
+
+### Mini (ventilation)
 
 - Turn ventilation on/off
 - Adjust fan speed (0–100%)
@@ -29,6 +33,15 @@ As a proud owner of an Open AIR Mini and starting to fiddle with Homey, I wanted
 - View VOC Index — dynamically added when SGP-41 is detected
 - View NOx Index — dynamically added when SGP-41 is detected
 - Multi-sensor slot support: two physical sensor slots (SENSOR 1 and SENSOR 2) are detected automatically. Slot 2+ sensors get sub-capabilities (e.g. "Temperature 2", "Humidity 2").
+
+### Valve (zone damper)
+
+- Open / close valve
+- Set valve position (0–100%)
+- Monitor valve position and closed state
+- Stop valve movement
+- Re-home valve (button entity)
+- Flow card actions: open, close, stop, set position, re-home
 
 ## Setup
 
@@ -58,13 +71,9 @@ As a proud owner of an Open AIR Mini and starting to fiddle with Homey, I wanted
 
 > **Note:** ESPHome 2026.x removed API password authentication. Only encryption key is supported for ESPHome 2026.x and newer. The app automatically detects the ESPHome version and uses the appropriate protocol library.
 
-**Not supported:**
-
-- Open AIR Valve is currently not supported and not planned to be developed.
-
 ## Requirements
 
-- Open AIR Mini device with ESPHome firmware
+- Open AIR device (Mini or Valve) with ESPHome firmware
 - Device must be on the same network as your Homey
 
 <details>
@@ -84,7 +93,9 @@ This project is licensed under the [GNU General Public License v3.0](LICENSE).
 
 ## Links
 
+- [Open AIR project](https://github.com/Flamingo-tech/Open-AIR)
 - [Open AIR Mini hardware](https://github.com/Flamingo-tech/Open-AIR/tree/main/Open%20AIR%20Mini)
+- [Open AIR Valve hardware](https://github.com/Flamingo-tech/Open-AIR/tree/main/Open%20AIR%20Valve)
 - [Buy on Tindie](https://www.tindie.com/products/theflamingo/open-air-mini/)
 - [Homey App Store](https://homey.app/en-us/app/com.remingtondev.open-air-mini/)
 - [Issues & Feedback](https://github.com/RemingtonDev/Homey-Open-AIR/issues)

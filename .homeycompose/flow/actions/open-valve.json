@@ -1,0 +1,19 @@
+{
+  "title": {
+    "en": "Open valve fully",
+    "nl": "Open klep volledig",
+    "fr": "Ouvrir la vanne completement"
+  },
+  "hint": {
+    "en": "Opens the valve to 100%.",
+    "nl": "Opent de klep naar 100%.",
+    "fr": "Ouvre la vanne a 100%."
+  },
+  "args": [
+    {
+      "type": "device",
+      "name": "device",
+      "filter": "driver_id=open-air-valve"
+    }
+  ]
+}

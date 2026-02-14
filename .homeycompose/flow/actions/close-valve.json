@@ -1,0 +1,19 @@
+{
+  "title": {
+    "en": "Close valve",
+    "nl": "Sluit klep",
+    "fr": "Fermer la vanne"
+  },
+  "hint": {
+    "en": "Closes the valve to 0%.",
+    "nl": "Sluit de klep naar 0%.",
+    "fr": "Ferme la vanne a 0%."
+  },
+  "args": [
+    {
+      "type": "device",
+      "name": "device",
+      "filter": "driver_id=open-air-valve"
+    }
+  ]
+}

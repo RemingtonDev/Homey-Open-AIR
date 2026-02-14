@@ -1,0 +1,13 @@
+{
+  "type": "boolean",
+  "title": {
+    "en": "Valve Closed",
+    "nl": "Klep gesloten",
+    "fr": "Vanne fermee"
+  },
+  "getable": true,
+  "setable": false,
+  "uiComponent": "sensor",
+  "insights": true,
+  "icon": "/drivers/open-air-valve/assets/icon.svg"
+}
