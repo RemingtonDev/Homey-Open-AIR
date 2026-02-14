@@ -8,6 +8,7 @@
   "capabilities": [
     "dim",
     "onoff",
+    "measure_fan_speed",
     "measure_humidity",
     "measure_rpm",
     "measure_temperature"

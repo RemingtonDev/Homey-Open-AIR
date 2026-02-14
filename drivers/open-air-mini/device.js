@@ -254,6 +254,10 @@ class OpenAirMiniDevice extends Homey.Device {
         if (typeof state.speedLevel === 'number') {
           const normalizedSpeed = state.speedLevel / this.entityKeys.fanSpeedLevels;
           await this.setCapabilityValue('dim', clampDimValue(normalizedSpeed));
+          // Update fan speed percentage tile
+          if (this.hasCapability('measure_fan_speed')) {
+            await this.setCapabilityValue('measure_fan_speed', roundToDecimals(normalizedSpeed * 100, 0));
+          }
         }
         return;
       }
