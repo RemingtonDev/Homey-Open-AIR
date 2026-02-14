@@ -3,7 +3,7 @@
   "title": {
     "en": "Fan Speed",
     "nl": "Ventilatorsnelheid",
-    "fr": "Vitesse ventilateur"
+    "fr": "Vitesse du ventilateur"
   },
   "getable": true,
   "setable": false,
@@ -12,5 +12,5 @@
   "min": 0,
   "max": 100,
   "insights": true,
-  "icon": "/assets/capabilities/fan-speed.svg"
+  "icon": "/drivers/open-air-mini/assets/icon.svg"
 }
