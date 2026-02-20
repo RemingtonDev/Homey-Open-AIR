@@ -25,6 +25,12 @@ class OpenAirMiniDevice extends Homey.Device {
     this._destroyed = false;
     this._slotTitleFlags = {}; // tracks which measurement types have had slot 1 relabeled
 
+    // Migrate: add measure_fan_speed for devices paired before v1.0.5
+    if (!this.hasCapability('measure_fan_speed')) {
+      await this.addCapability('measure_fan_speed');
+      this.log('Migrated: added measure_fan_speed capability');
+    }
+
     // Fix corrupted dim value immediately (from previous buggy 0-100 scaling)
     await this._fixCorruptedDimValue();
 
