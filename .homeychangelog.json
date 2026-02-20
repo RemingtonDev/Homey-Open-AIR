@@ -5,9 +5,6 @@
   "1.0.5": {
     "en": "Improved app description, README, and images for App Store compliance."
   },
-  "1.0.6": {
-    "en": "Added Open AIR Valve device support with position control, flow actions, and re-homing. Added fan speed measurement capability. Fixed French translations."
-  },
   "1.1.0": {
     "en": "Added Open AIR Valve device support with position control, flow actions, and re-homing. Added fan speed measurement capability. Fixed French translations. "
   }
