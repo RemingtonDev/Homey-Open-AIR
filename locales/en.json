@@ -42,6 +42,7 @@
     "password_hint": "For older ESPHome versions using api: password:",
     "rpm_decimals_hint": "Number of decimal places for RPM display",
     "temperature_decimals_hint": "Number of decimal places for temperature display",
-    "humidity_decimals_hint": "Number of decimal places for humidity display"
+    "humidity_decimals_hint": "Number of decimal places for humidity display",
+    "auto_curve_enabled_hint": "Automatically adjusts fan speed every 30 seconds based on humidity. Manual speed changes pause the curve for 30 minutes."
   }
 }

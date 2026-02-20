@@ -213,6 +213,26 @@
       },
       {
         "title": {
+          "en": "Pause auto fan curve",
+          "nl": "Pauzeer automatische ventilatorcurve",
+          "fr": "Mettre en pause la courbe auto ventilateur"
+        },
+        "hint": {
+          "en": "Pauses the auto fan curve indefinitely until resumed.",
+          "nl": "Pauzeert de automatische ventilatorcurve voor onbepaalde tijd tot deze wordt hervat.",
+          "fr": "Met en pause la courbe automatique du ventilateur indéfiniment jusqu'à la reprise."
+        },
+        "args": [
+          {
+            "type": "device",
+            "name": "device",
+            "filter": "driver_id=open-air-mini"
+          }
+        ],
+        "id": "pause-auto-curve"
+      },
+      {
+        "title": {
           "en": "Re-home valve (recalibrate)",
           "nl": "Klep opnieuw kalibreren",
           "fr": "Recalibrer la vanne"
@@ -230,6 +250,26 @@
           }
         ],
         "id": "rehome-valve"
+      },
+      {
+        "title": {
+          "en": "Resume auto fan curve",
+          "nl": "Hervat automatische ventilatorcurve",
+          "fr": "Reprendre la courbe auto ventilateur"
+        },
+        "hint": {
+          "en": "Clears any manual override and lets the auto fan curve resume immediately.",
+          "nl": "Wist handmatige override en laat de automatische ventilatorcurve direct hervatten.",
+          "fr": "Efface le mode manuel et reprend immédiatement la courbe automatique du ventilateur."
+        },
+        "args": [
+          {
+            "type": "device",
+            "name": "device",
+            "filter": "driver_id=open-air-mini"
+          }
+        ],
+        "id": "resume-auto-curve"
       },
       {
         "title": {
@@ -590,6 +630,96 @@
                   }
                 }
               ]
+            }
+          ]
+        },
+        {
+          "type": "group",
+          "label": {
+            "en": "Auto Fan Curve",
+            "nl": "Automatische ventilatorcurve",
+            "fr": "Courbe auto ventilateur"
+          },
+          "children": [
+            {
+              "id": "auto_curve_enabled",
+              "type": "checkbox",
+              "label": {
+                "en": "Enabled",
+                "nl": "Ingeschakeld",
+                "fr": "Activé"
+              },
+              "hint": {
+                "en": "Automatically adjusts fan speed every 30 seconds based on humidity. Manual speed changes pause the curve for 30 minutes.",
+                "nl": "Past de ventilatorsnelheid elke 30 seconden automatisch aan op basis van vochtigheid. Handmatige snelheidswijzigingen pauzeren de curve voor 30 minuten.",
+                "fr": "Ajuste automatiquement la vitesse du ventilateur toutes les 30 secondes selon l'humidité. Les changements manuels mettent la courbe en pause pendant 30 minutes."
+              },
+              "value": true
+            },
+            {
+              "id": "auto_curve_high_humidity",
+              "type": "number",
+              "label": {
+                "en": "High humidity threshold (%)",
+                "nl": "Hoge vochtigheidsdrempel (%)",
+                "fr": "Seuil d'humidité haute (%)"
+              },
+              "value": 75,
+              "min": 0,
+              "max": 100,
+              "step": 1
+            },
+            {
+              "id": "auto_curve_medium_humidity",
+              "type": "number",
+              "label": {
+                "en": "Medium humidity threshold (%)",
+                "nl": "Middelhoge vochtigheidsdrempel (%)",
+                "fr": "Seuil d'humidité moyenne (%)"
+              },
+              "value": 55,
+              "min": 0,
+              "max": 100,
+              "step": 1
+            },
+            {
+              "id": "auto_curve_high_speed",
+              "type": "number",
+              "label": {
+                "en": "Fan speed at high humidity (%)",
+                "nl": "Ventilatorsnelheid bij hoge vochtigheid (%)",
+                "fr": "Vitesse à humidité haute (%)"
+              },
+              "value": 100,
+              "min": 0,
+              "max": 100,
+              "step": 1
+            },
+            {
+              "id": "auto_curve_medium_speed",
+              "type": "number",
+              "label": {
+                "en": "Fan speed at medium humidity (%)",
+                "nl": "Ventilatorsnelheid bij middelhoge vochtigheid (%)",
+                "fr": "Vitesse à humidité moyenne (%)"
+              },
+              "value": 50,
+              "min": 0,
+              "max": 100,
+              "step": 1
+            },
+            {
+              "id": "auto_curve_low_speed",
+              "type": "number",
+              "label": {
+                "en": "Fan speed below medium humidity (%)",
+                "nl": "Ventilatorsnelheid onder middelhoge vochtigheid (%)",
+                "fr": "Vitesse sous humidité moyenne (%)"
+              },
+              "value": 25,
+              "min": 0,
+              "max": 100,
+              "step": 1
             }
           ]
         },

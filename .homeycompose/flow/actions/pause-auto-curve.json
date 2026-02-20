@@ -1,0 +1,19 @@
+{
+  "title": {
+    "en": "Pause auto fan curve",
+    "nl": "Pauzeer automatische ventilatorcurve",
+    "fr": "Mettre en pause la courbe auto ventilateur"
+  },
+  "hint": {
+    "en": "Pauses the auto fan curve indefinitely until resumed.",
+    "nl": "Pauzeert de automatische ventilatorcurve voor onbepaalde tijd tot deze wordt hervat.",
+    "fr": "Met en pause la courbe automatique du ventilateur indéfiniment jusqu'à la reprise."
+  },
+  "args": [
+    {
+      "type": "device",
+      "name": "device",
+      "filter": "driver_id=open-air-mini"
+    }
+  ]
+}

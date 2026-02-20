@@ -2,7 +2,7 @@
 
 const Homey = require('homey');
 const EspHomeClient = require('../../lib/EspHomeClient');
-const { ESPHOME, COMMAND } = require('../../lib/constants');
+const { ESPHOME, COMMAND, AUTO_CURVE } = require('../../lib/constants');
 const { createEntityKeys, fixCorruptedDimValue, clampDimValue, roundToDecimals, SENSOR_TYPES, extractSensorSlot, detectMeasurementType, computeCapabilityId } = require('../../lib/utils');
 
 // Localized base titles per measurement type for slot labeling
@@ -25,10 +25,22 @@ class OpenAirMiniDevice extends Homey.Device {
     this._destroyed = false;
     this._slotTitleFlags = {}; // tracks which measurement types have had slot 1 relabeled
 
+    // Auto-curve state
+    this._autoCurveTimer = null;
+    this._manualOverrideActive = false;
+    this._manualOverrideTimestamp = null;
+    this._manualOverrideIndefinite = false;
+
     // Migrate: add measure_fan_speed for devices paired before v1.0.5
     if (!this.hasCapability('measure_fan_speed')) {
       await this.addCapability('measure_fan_speed');
       this.log('Migrated: added measure_fan_speed capability');
+    }
+
+    // Migrate: disable auto-curve for devices paired before this version
+    if (this.getSetting('auto_curve_enabled') === null) {
+      await this.setSettings({ auto_curve_enabled: false });
+      this.log('Migrated: set auto_curve_enabled to false for pre-existing device');
     }
 
     // Fix corrupted dim value immediately (from previous buggy 0-100 scaling)
@@ -39,6 +51,9 @@ class OpenAirMiniDevice extends Homey.Device {
 
     // Register capability listeners
     this._registerCapabilityListeners();
+
+    // Start auto fan curve
+    this._initAutoCurve();
   }
 
   /**
@@ -296,6 +311,7 @@ class OpenAirMiniDevice extends Homey.Device {
       this._requireFanEntity();
 
       await this.client.setFanState(this.entityKeys.fan, { state: value });
+      this.triggerManualOverride();
     });
 
     // Dim (Fan Speed) capability with debouncing
@@ -318,6 +334,7 @@ class OpenAirMiniDevice extends Homey.Device {
               state: speed > 0,
               speed,
             });
+            this.triggerManualOverride();
             resolve();
           } catch (error) {
             reject(error);
@@ -349,11 +366,159 @@ class OpenAirMiniDevice extends Homey.Device {
     });
   }
 
+  // ── Auto Fan Curve ──────────────────────────────────────────────────
+
+  /**
+   * Initialize (or reinitialize) the auto fan curve timer.
+   */
+  _initAutoCurve() {
+    this._stopAutoCurve();
+
+    if (!this.getSetting('auto_curve_enabled')) {
+      this.log('Auto fan curve is disabled');
+      return;
+    }
+
+    this.log('Starting auto fan curve');
+
+    // Run one immediate tick, then every INTERVAL_MS
+    this._runAutoCurveTick();
+    this._autoCurveTimer = this.homey.setInterval(() => {
+      this._runAutoCurveTick();
+    }, AUTO_CURVE.INTERVAL_MS);
+  }
+
+  /**
+   * Stop the auto fan curve timer.
+   */
+  _stopAutoCurve() {
+    if (this._autoCurveTimer) {
+      this.homey.clearInterval(this._autoCurveTimer);
+      this._autoCurveTimer = null;
+    }
+  }
+
+  /**
+   * Single auto-curve tick: read humidity, compute target speed, apply.
+   */
+  async _runAutoCurveTick() {
+    try {
+      // Skip if manual override is active
+      if (this._isManualOverrideActive()) {
+        this.log('Auto fan curve tick skipped: manual override');
+        return;
+      }
+
+      // Skip if not connected
+      if (!this.client || !this.client.connected) {
+        this.log('Auto fan curve tick skipped: not connected');
+        return;
+      }
+
+      // Skip if no fan entity
+      if (this.entityKeys.fan === null) {
+        this.log('Auto fan curve tick skipped: no fan entity');
+        return;
+      }
+
+      // Read humidity
+      const humidity = this.getCapabilityValue('measure_humidity');
+      if (humidity === null || humidity === undefined) {
+        this.log('Auto fan curve tick skipped: no humidity reading');
+        return;
+      }
+
+      // Compute target speed from settings thresholds
+      const highHumidity = this.getSetting('auto_curve_high_humidity') ?? AUTO_CURVE.DEFAULTS.HIGH_HUMIDITY;
+      const mediumHumidity = this.getSetting('auto_curve_medium_humidity') ?? AUTO_CURVE.DEFAULTS.MEDIUM_HUMIDITY;
+      const highSpeed = this.getSetting('auto_curve_high_speed') ?? AUTO_CURVE.DEFAULTS.HIGH_SPEED;
+      const mediumSpeed = this.getSetting('auto_curve_medium_speed') ?? AUTO_CURVE.DEFAULTS.MEDIUM_SPEED;
+      const lowSpeed = this.getSetting('auto_curve_low_speed') ?? AUTO_CURVE.DEFAULTS.LOW_SPEED;
+
+      let targetSpeed;
+      if (humidity >= highHumidity) {
+        targetSpeed = highSpeed;
+      } else if (humidity >= mediumHumidity) {
+        targetSpeed = mediumSpeed;
+      } else {
+        targetSpeed = lowSpeed;
+      }
+
+      this.log(`Auto fan curve tick: humidity ${humidity}% → fan speed ${targetSpeed}%`);
+      await this.setFanSpeedPercent(targetSpeed);
+    } catch (error) {
+      this.error('Auto fan curve tick error:', error);
+    }
+  }
+
+  /**
+   * Check if manual override is currently active. Auto-expires timed overrides.
+   */
+  _isManualOverrideActive() {
+    if (!this._manualOverrideActive) return false;
+
+    // Indefinite override never expires
+    if (this._manualOverrideIndefinite) return true;
+
+    // Timed override: check if expired
+    if (this._manualOverrideTimestamp) {
+      const elapsed = Date.now() - this._manualOverrideTimestamp;
+      if (elapsed >= AUTO_CURVE.MANUAL_OVERRIDE_TIMEOUT_MS) {
+        this.log('Manual override expired (30 min timeout)');
+        this._clearManualOverride();
+        return false;
+      }
+    }
+
+    return true;
+  }
+
+  /**
+   * Trigger a timed manual override (30 min). Called from UI interactions and flows.
+   */
+  triggerManualOverride() {
+    this._manualOverrideActive = true;
+    this._manualOverrideTimestamp = Date.now();
+    this._manualOverrideIndefinite = false;
+    this.log('Manual override triggered (30 min timeout)');
+  }
+
+  /**
+   * Pause auto-curve indefinitely (no timeout). Called from flow action.
+   */
+  pauseAutoCurve() {
+    this._manualOverrideActive = true;
+    this._manualOverrideTimestamp = null;
+    this._manualOverrideIndefinite = true;
+    this.log('Auto fan curve paused indefinitely');
+  }
+
+  /**
+   * Resume auto-curve by clearing all override flags. Called from flow action.
+   */
+  resumeAutoCurve() {
+    this._clearManualOverride();
+    this.log('Auto fan curve resumed');
+  }
+
+  /**
+   * Reset manual override state.
+   */
+  _clearManualOverride() {
+    this._manualOverrideActive = false;
+    this._manualOverrideTimestamp = null;
+    this._manualOverrideIndefinite = false;
+  }
+
+  // ── Reconnect / Settings / Lifecycle ───────────────────────────────
+
   /**
    * Reconnect to the device (used after repair)
    */
   async reconnect() {
     this.log('Reconnecting to device...');
+
+    this._stopAutoCurve();
 
     if (this.client) {
       this.client.disconnect();
@@ -364,6 +529,7 @@ class OpenAirMiniDevice extends Homey.Device {
     this._slotTitleFlags = {};
 
     await this._initializeClient();
+    this._initAutoCurve();
   }
 
   /**
@@ -391,6 +557,11 @@ class OpenAirMiniDevice extends Homey.Device {
 
       await this.reconnect();
     }
+
+    // Reinitialize auto-curve if any auto_curve_* setting changed
+    if (changedKeys.some(key => key.startsWith('auto_curve_'))) {
+      this.homey.setTimeout(() => this._initAutoCurve(), 0);
+    }
   }
 
   /**
@@ -399,6 +570,8 @@ class OpenAirMiniDevice extends Homey.Device {
   async onDeleted() {
     this.log('Device deleted, cleaning up...');
     this._destroyed = true;
+
+    this._stopAutoCurve();
 
     if (this._dimDebounceTimer) {
       clearTimeout(this._dimDebounceTimer);
@@ -417,6 +590,8 @@ class OpenAirMiniDevice extends Homey.Device {
   async onUninit() {
     this.log('Device uninit, cleaning up...');
     this._destroyed = true;
+
+    this._stopAutoCurve();
 
     if (this._dimDebounceTimer) {
       clearTimeout(this._dimDebounceTimer);

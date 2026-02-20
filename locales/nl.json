@@ -42,6 +42,7 @@
     "password_hint": "Voor oudere ESPHome versies met api: password:",
     "rpm_decimals_hint": "Aantal decimalen voor toerentalweergave",
     "temperature_decimals_hint": "Aantal decimalen voor temperatuurweergave",
-    "humidity_decimals_hint": "Aantal decimalen voor vochtigheidsweergave"
+    "humidity_decimals_hint": "Aantal decimalen voor vochtigheidsweergave",
+    "auto_curve_enabled_hint": "Past de ventilatorsnelheid elke 30 seconden automatisch aan op basis van vochtigheid. Handmatige snelheidswijzigingen pauzeren de curve voor 30 minuten."
   }
 }

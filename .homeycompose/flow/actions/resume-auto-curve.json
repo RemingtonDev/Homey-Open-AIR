@@ -1,0 +1,19 @@
+{
+  "title": {
+    "en": "Resume auto fan curve",
+    "nl": "Hervat automatische ventilatorcurve",
+    "fr": "Reprendre la courbe auto ventilateur"
+  },
+  "hint": {
+    "en": "Clears any manual override and lets the auto fan curve resume immediately.",
+    "nl": "Wist handmatige override en laat de automatische ventilatorcurve direct hervatten.",
+    "fr": "Efface le mode manuel et reprend immédiatement la courbe automatique du ventilateur."
+  },
+  "args": [
+    {
+      "type": "device",
+      "name": "device",
+      "filter": "driver_id=open-air-mini"
+    }
+  ]
+}

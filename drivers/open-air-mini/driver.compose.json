@@ -141,6 +141,64 @@
     },
     {
       "type": "group",
+      "label": { "en": "Auto Fan Curve", "nl": "Automatische ventilatorcurve", "fr": "Courbe auto ventilateur" },
+      "children": [
+        {
+          "id": "auto_curve_enabled",
+          "type": "checkbox",
+          "label": { "en": "Enabled", "nl": "Ingeschakeld", "fr": "Activé" },
+          "hint": { "en": "Automatically adjusts fan speed every 30 seconds based on humidity. Manual speed changes pause the curve for 30 minutes.", "nl": "Past de ventilatorsnelheid elke 30 seconden automatisch aan op basis van vochtigheid. Handmatige snelheidswijzigingen pauzeren de curve voor 30 minuten.", "fr": "Ajuste automatiquement la vitesse du ventilateur toutes les 30 secondes selon l'humidité. Les changements manuels mettent la courbe en pause pendant 30 minutes." },
+          "value": true
+        },
+        {
+          "id": "auto_curve_high_humidity",
+          "type": "number",
+          "label": { "en": "High humidity threshold (%)", "nl": "Hoge vochtigheidsdrempel (%)", "fr": "Seuil d'humidité haute (%)" },
+          "value": 75,
+          "min": 0,
+          "max": 100,
+          "step": 1
+        },
+        {
+          "id": "auto_curve_medium_humidity",
+          "type": "number",
+          "label": { "en": "Medium humidity threshold (%)", "nl": "Middelhoge vochtigheidsdrempel (%)", "fr": "Seuil d'humidité moyenne (%)" },
+          "value": 55,
+          "min": 0,
+          "max": 100,
+          "step": 1
+        },
+        {
+          "id": "auto_curve_high_speed",
+          "type": "number",
+          "label": { "en": "Fan speed at high humidity (%)", "nl": "Ventilatorsnelheid bij hoge vochtigheid (%)", "fr": "Vitesse à humidité haute (%)" },
+          "value": 100,
+          "min": 0,
+          "max": 100,
+          "step": 1
+        },
+        {
+          "id": "auto_curve_medium_speed",
+          "type": "number",
+          "label": { "en": "Fan speed at medium humidity (%)", "nl": "Ventilatorsnelheid bij middelhoge vochtigheid (%)", "fr": "Vitesse à humidité moyenne (%)" },
+          "value": 50,
+          "min": 0,
+          "max": 100,
+          "step": 1
+        },
+        {
+          "id": "auto_curve_low_speed",
+          "type": "number",
+          "label": { "en": "Fan speed below medium humidity (%)", "nl": "Ventilatorsnelheid onder middelhoge vochtigheid (%)", "fr": "Vitesse sous humidité moyenne (%)" },
+          "value": 25,
+          "min": 0,
+          "max": 100,
+          "step": 1
+        }
+      ]
+    },
+    {
+      "type": "group",
       "label": { "en": "Connection", "nl": "Verbinding", "fr": "Connexion" },
       "children": [
         {

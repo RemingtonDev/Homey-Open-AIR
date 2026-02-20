@@ -42,6 +42,7 @@
     "password_hint": "Pour les anciennes versions ESPHome utilisant api: password:",
     "rpm_decimals_hint": "Nombre de décimales pour l'affichage du régime",
     "temperature_decimals_hint": "Nombre de décimales pour l'affichage de la température",
-    "humidity_decimals_hint": "Nombre de décimales pour l'affichage de l'humidité"
+    "humidity_decimals_hint": "Nombre de décimales pour l'affichage de l'humidité",
+    "auto_curve_enabled_hint": "Ajuste automatiquement la vitesse du ventilateur toutes les 30 secondes selon l'humidité. Les changements manuels mettent la courbe en pause pendant 30 minutes."
   }
 }

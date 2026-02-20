@@ -32,6 +32,20 @@ class OpenAirApp extends Homey.App {
       this.log(`Humidity ${humidity}% → fan speed ${targetSpeed}%`);
 
       await args.device.setFanSpeedPercent(targetSpeed);
+      args.device.triggerManualOverride();
+    });
+
+    // --- Auto fan curve flow actions ---
+    const resumeAutoCurveAction = this.homey.flow.getActionCard('resume-auto-curve');
+    resumeAutoCurveAction.registerRunListener(async (args) => {
+      this.log('Flow: Resume auto fan curve');
+      args.device.resumeAutoCurve();
+    });
+
+    const pauseAutoCurveAction = this.homey.flow.getActionCard('pause-auto-curve');
+    pauseAutoCurveAction.registerRunListener(async (args) => {
+      this.log('Flow: Pause auto fan curve');
+      args.device.pauseAutoCurve();
     });
 
     // --- Valve flow actions ---
