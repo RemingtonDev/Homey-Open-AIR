@@ -1,6 +1,6 @@
 {
   "id": "com.remingtondev.open-air-mini",
-  "version": "1.1.1",
+  "version": "1.1.2",
   "compatibility": ">=5.0.0",
   "sdk": 3,
   "platforms": [
@@ -14,7 +14,7 @@
   "description": {
     "en": "Control your Open AIR ventilation devices",
     "nl": "Bedien je Open AIR ventilatie-apparaten",
-    "fr": "Controlez vos appareils de ventilation Open AIR"
+    "fr": "Contrôlez vos appareils de ventilation Open AIR"
   },
   "category": [
     "climate"

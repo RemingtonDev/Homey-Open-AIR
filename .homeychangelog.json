@@ -8,7 +8,7 @@
   "1.1.0": {
     "en": "Added Open AIR Valve device support with position control, flow actions, and re-homing. Added fan speed measurement capability. Fixed French translations. "
   },
-  "1.1.1": {
-    "en": "Added automatic fan curve with humidity-based speed control, pause/resume flow actions, and detailed settings hints. Fixed medium speed default to 60%."
+  "1.1.2": {
+    "en": "Added automatic fan curve with humidity-based speed control, pause/resume flow actions, and configurable thresholds. Updated store descriptions and documentation for Valve support. Fixed French accent errors across Valve driver and app settings."
   }
 }

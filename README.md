@@ -26,6 +26,7 @@ As a proud owner of an Open AIR Mini and starting to fiddle with Homey, I wanted
 
 - Turn ventilation on/off
 - Adjust fan speed (0–100%)
+- Auto fan curve: automatic fan speed control based on humidity thresholds, with pause/resume
 - Monitor fan RPM
 - View temperature readings
 - View humidity readings

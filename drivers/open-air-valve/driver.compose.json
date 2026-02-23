@@ -18,7 +18,7 @@
       "title": {
         "en": "Valve Capacity",
         "nl": "Klepcapaciteit",
-        "fr": "Capacite de la vanne"
+        "fr": "Capacité de la vanne"
       },
       "min": 0,
       "max": 1,
@@ -28,7 +28,7 @@
       "title": {
         "en": "Valve Control",
         "nl": "Klepbediening",
-        "fr": "Controle de la vanne"
+        "fr": "Contrôle de la vanne"
       }
     },
     "measure_temperature": {
@@ -73,7 +73,7 @@
         {
           "id": "temperature_decimals",
           "type": "dropdown",
-          "label": { "en": "Temperature Decimals", "nl": "Temperatuur decimalen", "fr": "Decimales temperature" },
+          "label": { "en": "Temperature Decimals", "nl": "Temperatuur decimalen", "fr": "Décimales température" },
           "value": "1",
           "values": [
             { "id": "0", "label": { "en": "0", "nl": "0", "fr": "0" } },
@@ -84,7 +84,7 @@
         {
           "id": "humidity_decimals",
           "type": "dropdown",
-          "label": { "en": "Humidity Decimals", "nl": "Vochtigheid decimalen", "fr": "Decimales humidite" },
+          "label": { "en": "Humidity Decimals", "nl": "Vochtigheid decimalen", "fr": "Décimales humidité" },
           "value": "1",
           "values": [
             { "id": "0", "label": { "en": "0", "nl": "0", "fr": "0" } },
@@ -95,7 +95,7 @@
         {
           "id": "co2_decimals",
           "type": "dropdown",
-          "label": { "en": "CO2 Decimals", "nl": "CO2 decimalen", "fr": "Decimales CO2" },
+          "label": { "en": "CO2 Decimals", "nl": "CO2 decimalen", "fr": "Décimales CO2" },
           "value": "0",
           "values": [
             { "id": "0", "label": { "en": "0", "nl": "0", "fr": "0" } },
@@ -106,7 +106,7 @@
         {
           "id": "voc_decimals",
           "type": "dropdown",
-          "label": { "en": "VOC Index Decimals", "nl": "VOC Index decimalen", "fr": "Decimales indice COV" },
+          "label": { "en": "VOC Index Decimals", "nl": "VOC Index decimalen", "fr": "Décimales indice COV" },
           "value": "0",
           "values": [
             { "id": "0", "label": { "en": "0", "nl": "0", "fr": "0" } },
@@ -117,7 +117,7 @@
         {
           "id": "nox_decimals",
           "type": "dropdown",
-          "label": { "en": "NOx Index Decimals", "nl": "NOx Index decimalen", "fr": "Decimales indice NOx" },
+          "label": { "en": "NOx Index Decimals", "nl": "NOx Index decimalen", "fr": "Décimales indice NOx" },
           "value": "0",
           "values": [
             { "id": "0", "label": { "en": "0", "nl": "0", "fr": "0" } },
@@ -142,7 +142,7 @@
           "id": "port",
           "type": "number",
           "label": { "en": "Port", "nl": "Poort", "fr": "Port" },
-          "hint": { "en": "API port (default: 6053)", "nl": "API poort (standaard: 6053)", "fr": "Port API (par defaut : 6053)" },
+          "hint": { "en": "API port (default: 6053)", "nl": "API poort (standaard: 6053)", "fr": "Port API (par défaut : 6053)" },
           "value": 6053,
           "min": 1,
           "max": 65535
@@ -150,7 +150,7 @@
         {
           "id": "encryptionKey",
           "type": "password",
-          "label": { "en": "Encryption Key", "nl": "Encryptiesleutel", "fr": "Cle de chiffrement" },
+          "label": { "en": "Encryption Key", "nl": "Encryptiesleutel", "fr": "Clé de chiffrement" },
           "hint": { "en": "Found in your ESPHome YAML under api: encryption: key:", "nl": "Te vinden in je ESPHome YAML onder api: encryption: key:", "fr": "Disponible dans votre fichier YAML ESPHome sous api: encryption: key:" },
           "value": ""
         },
