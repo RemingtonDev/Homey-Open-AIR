@@ -185,7 +185,7 @@
           "type": "number",
           "label": { "en": "Fan speed at medium humidity (%)", "nl": "Ventilatorsnelheid bij middelhoge vochtigheid (%)", "fr": "Vitesse à humidité moyenne (%)" },
           "hint": { "en": "Fan speed when humidity is between the medium and high thresholds", "nl": "Ventilatorsnelheid wanneer de vochtigheid tussen de middelhoge en hoge drempel ligt", "fr": "Vitesse du ventilateur lorsque l'humidité est entre les seuils moyen et haut" },
-          "value": 50,
+          "value": 60,
           "min": 0,
           "max": 100,
           "step": 1
