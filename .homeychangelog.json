@@ -11,7 +11,7 @@
   "1.1.2": {
     "en": "Added automatic fan curve with humidity-based speed control, pause/resume flow actions, and configurable thresholds. Updated store descriptions and documentation for Valve support. Fixed French accent errors across Valve driver and app settings."
   },
-  "1.1.3": {
+  "1.1.4": {
     "en": "Added manual device entry fallback when mDNS discovery fails to find devices."
   }
 }
