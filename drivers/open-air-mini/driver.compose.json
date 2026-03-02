@@ -47,7 +47,7 @@
       "id": "list_devices",
       "template": "list_devices",
       "options": {
-        "singular": false
+        "singular": true
       },
       "navigation": {
         "next": "credentials"
