@@ -12,7 +12,7 @@ class OpenAirMiniDriver extends Homey.Driver {
 
   /**
    * Called when pairing starts - returns list of discovered devices
-   * Note: "Add manually..." option removed - credentials view is used as fallback when no devices found
+   * Always includes a manual entry option so users can enter IP addresses directly
    */
   async onPairListDevices() {
     this.log('Listing devices for pairing...');
@@ -47,11 +47,17 @@ class OpenAirMiniDriver extends Homey.Driver {
       devices.push(device);
     }
 
-    // If no devices discovered, we'll show an empty list
-    // The pairing flow will navigate to credentials view for manual entry
     if (devices.length === 0) {
       this.log('No devices discovered via mDNS');
     }
+
+    // Always add manual entry option
+    devices.push({
+      name: this.homey.__('pair.manual_entry'),
+      data: {
+        id: '__manual_entry__',
+      },
+    });
 
     return devices;
   }
@@ -85,22 +91,30 @@ class OpenAirMiniDriver extends Homey.Driver {
     // Store selected device and pre-fill credentials BEFORE navigation
     // Navigation to credentials view is handled by driver.compose.json navigation.next
     session.setHandler('list_devices_selection', async (devices) => {
-      this.log('Device selected:', devices?.[0]?.name, 'at', devices?.[0]?.store?.address);
       if (devices && devices.length > 0) {
+        // If manual entry is among selections, force manual behavior
+        const isManual = devices.some(d => d.data?.id === '__manual_entry__');
+        if (isManual) {
+          this.log('Manual entry selected, clearing credentials');
+          selectedDevice = null;
+          credentials = {
+            host: '',
+            port: ESPHOME.DEFAULT_PORT,
+            encryptionKey: '',
+            password: '',
+          };
+          return;
+        }
+
         selectedDevice = devices[0];
         this.log(`Selected device: ${selectedDevice.name} at ${selectedDevice.store?.address || 'unknown address'}`);
 
         // Pre-fill credentials BEFORE navigation happens
-        // This ensures getCredentials returns the correct values when the form loads
         if (selectedDevice.store?.address) {
           credentials.host = selectedDevice.store.address;
           credentials.port = selectedDevice.store.port || ESPHOME.DEFAULT_PORT;
           this.log(`Pre-filled credentials: ${credentials.host}:${credentials.port}`);
         }
-
-        // DO NOT call session.showView('credentials') here!
-        // Let driver.compose.json navigation.next handle the navigation naturally
-        // Calling showView here causes double navigation and the list flashes away
       }
     });
 

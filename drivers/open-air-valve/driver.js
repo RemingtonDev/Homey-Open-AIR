@@ -10,6 +10,10 @@ class OpenAirValveDriver extends Homey.Driver {
     this.log('Open AIR Valve driver has been initialized');
   }
 
+  /**
+   * Called when pairing starts - returns list of discovered devices
+   * Always includes a manual entry option so users can enter IP addresses directly
+   */
   async onPairListDevices() {
     this.log('Listing devices for pairing...');
 
@@ -45,6 +49,14 @@ class OpenAirValveDriver extends Homey.Driver {
       this.log('No devices discovered via mDNS');
     }
 
+    // Always add manual entry option
+    devices.push({
+      name: this.homey.__('pair.manual_entry'),
+      data: {
+        id: '__manual_entry__',
+      },
+    });
+
     return devices;
   }
 
@@ -68,8 +80,21 @@ class OpenAirValveDriver extends Homey.Driver {
     });
 
     session.setHandler('list_devices_selection', async (devices) => {
-      this.log('Device selected:', devices?.[0]?.name, 'at', devices?.[0]?.store?.address);
       if (devices && devices.length > 0) {
+        // If manual entry is among selections, force manual behavior
+        const isManual = devices.some(d => d.data?.id === '__manual_entry__');
+        if (isManual) {
+          this.log('Manual entry selected, clearing credentials');
+          selectedDevice = null;
+          credentials = {
+            host: '',
+            port: ESPHOME.DEFAULT_PORT,
+            encryptionKey: '',
+            password: '',
+          };
+          return;
+        }
+
         selectedDevice = devices[0];
         this.log(`Selected device: ${selectedDevice.name} at ${selectedDevice.store?.address || 'unknown address'}`);
 
