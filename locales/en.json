@@ -17,6 +17,14 @@
       "connecting": "Connecting to device...",
       "error_host_required": "IP address or hostname is required",
       "error_connection": "Failed to connect to device",
+      "error_connection_refused": "Connection refused. Check the port number or ensure the ESPHome API is enabled on the device.",
+      "error_host_not_found": "Hostname not found. Check the IP address or hostname.",
+      "error_host_unreachable": "Device unreachable. Check that the device is on the same network.",
+      "error_timeout": "Connection timed out. The device may be offline or unreachable.",
+      "error_invalid_encryption_key": "Invalid encryption key. Check the key in your ESPHome YAML under api: encryption: key:",
+      "error_invalid_password": "Invalid API password. Check the password in your ESPHome YAML under api: password:",
+      "error_auth_failed": "Authentication failed. Check your encryption key or password.",
+      "error_encryption_failed": "Encryption handshake failed. Check your encryption key.",
       "error_wrong_device_type": "This device is not compatible with this driver. Please use the correct driver for your device."
     }
   },
