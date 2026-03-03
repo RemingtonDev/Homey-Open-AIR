@@ -131,7 +131,12 @@ class OpenAirValveDriver extends Homey.Driver {
         this.log('testConnection result:', { success: result.success, error: result.error, entityCount: result.entities?.length || 0 });
 
         if (!result.success) {
-          const errorMsg = result.error || this.homey.__('pair.credentials.error_connection');
+          const errorKey = result.errorType
+            ? `pair.credentials.error_${result.errorType}`
+            : null;
+          const errorMsg = (errorKey && this.homey.__(errorKey))
+            || result.error
+            || this.homey.__('pair.credentials.error_connection');
           this.log(`Connection failed: ${errorMsg}`);
           throw new Error(errorMsg);
         }
@@ -209,7 +214,13 @@ class OpenAirValveDriver extends Homey.Driver {
       );
 
       if (!result.success) {
-        throw new Error(result.error || this.homey.__('pair.credentials.error_connection'));
+        const errorKey = result.errorType
+          ? `pair.credentials.error_${result.errorType}`
+          : null;
+        const errorMsg = (errorKey && this.homey.__(errorKey))
+          || result.error
+          || this.homey.__('pair.credentials.error_connection');
+        throw new Error(errorMsg);
       }
 
       await device.setStoreValue('address', data.host);

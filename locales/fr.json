@@ -17,6 +17,14 @@
       "connecting": "Connexion à l'appareil...",
       "error_host_required": "L'adresse IP ou le nom d'hôte est requis",
       "error_connection": "Échec de la connexion à l'appareil",
+      "error_connection_refused": "Connexion refusée. Vérifiez le numéro de port ou assurez-vous que l'API ESPHome est activée sur l'appareil.",
+      "error_host_not_found": "Nom d'hôte introuvable. Vérifiez l'adresse IP ou le nom d'hôte.",
+      "error_host_unreachable": "Appareil injoignable. Vérifiez que l'appareil est sur le même réseau.",
+      "error_timeout": "Délai de connexion dépassé. L'appareil est peut-être hors ligne ou injoignable.",
+      "error_invalid_encryption_key": "Clé de chiffrement invalide. Vérifiez la clé dans votre YAML ESPHome sous api: encryption: key:",
+      "error_invalid_password": "Mot de passe API invalide. Vérifiez le mot de passe dans votre YAML ESPHome sous api: password:",
+      "error_auth_failed": "Échec de l'authentification. Vérifiez votre clé de chiffrement ou votre mot de passe.",
+      "error_encryption_failed": "Échec du handshake de chiffrement. Vérifiez votre clé de chiffrement.",
       "error_wrong_device_type": "Cet appareil n'est pas compatible avec ce pilote. Veuillez utiliser le bon pilote pour votre appareil."
     }
   },

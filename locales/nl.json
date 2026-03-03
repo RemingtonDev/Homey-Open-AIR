@@ -17,6 +17,14 @@
       "connecting": "Verbinden met apparaat...",
       "error_host_required": "IP-adres of hostnaam is vereist",
       "error_connection": "Kan niet verbinden met apparaat",
+      "error_connection_refused": "Verbinding geweigerd. Controleer het poortnummer of zorg ervoor dat de ESPHome API is ingeschakeld op het apparaat.",
+      "error_host_not_found": "Hostnaam niet gevonden. Controleer het IP-adres of de hostnaam.",
+      "error_host_unreachable": "Apparaat onbereikbaar. Controleer of het apparaat op hetzelfde netwerk zit.",
+      "error_timeout": "Verbinding time-out. Het apparaat is mogelijk offline of onbereikbaar.",
+      "error_invalid_encryption_key": "Ongeldige encryptiesleutel. Controleer de sleutel in je ESPHome YAML onder api: encryption: key:",
+      "error_invalid_password": "Ongeldig API-wachtwoord. Controleer het wachtwoord in je ESPHome YAML onder api: password:",
+      "error_auth_failed": "Authenticatie mislukt. Controleer je encryptiesleutel of wachtwoord.",
+      "error_encryption_failed": "Encryptie-handshake mislukt. Controleer je encryptiesleutel.",
       "error_wrong_device_type": "Dit apparaat is niet compatibel met dit stuurprogramma. Gebruik het juiste stuurprogramma voor je apparaat."
     }
   },
