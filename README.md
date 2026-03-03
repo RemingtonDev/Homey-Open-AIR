@@ -4,6 +4,7 @@
 [![License: GPL-3.0](https://img.shields.io/github/license/RemingtonDev/Homey-Open-AIR)](LICENSE)
 [![Last commit](https://img.shields.io/github/last-commit/RemingtonDev/Homey-Open-AIR)](https://github.com/RemingtonDev/Homey-Open-AIR/commits/main)
 [![Issues](https://img.shields.io/github/issues/RemingtonDev/Homey-Open-AIR)](https://github.com/RemingtonDev/Homey-Open-AIR/issues)
+[![Ko-fi](https://img.shields.io/badge/Ko--fi-Support%20Development-13C3FF?logo=ko-fi&logoColor=white)](https://ko-fi.com/remingtondev)
 
 Control your Open AIR Mini and Open AIR Valve devices directly from Homey.
 
