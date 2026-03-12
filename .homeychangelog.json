@@ -16,5 +16,8 @@
   },
   "1.1.5": {
     "en": "Improved connection error messages during device pairing: specific, actionable errors (wrong encryption key, wrong password, connection refused, etc.) instead of generic timeouts. Localized in EN/FR/NL."
+  },
+  "1.2.0": {
+    "en": "Dynamic sensor capabilities: only sensors actually present on the device are added during pairing (no more empty tiles). Added ESPHome cover component compatibility for Valve driver. Improved device availability recovery and reconnect handling."
   }
 }
