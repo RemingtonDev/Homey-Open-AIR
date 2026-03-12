@@ -1,9 +1,9 @@
 {
   "type": "number",
   "title": {
-    "en": "Fan Speed",
-    "nl": "Ventilatorsnelheid",
-    "fr": "Vitesse du ventilateur"
+    "en": "Fan Speed (%)",
+    "nl": "Ventilatorsnelheid (%)",
+    "fr": "Vitesse du ventilateur (%)"
   },
   "getable": true,
   "setable": false,

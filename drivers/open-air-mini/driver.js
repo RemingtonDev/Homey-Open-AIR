@@ -3,6 +3,7 @@
 const Homey = require('homey');
 const EspHomeClient = require('../../lib/EspHomeClient');
 const { ESPHOME } = require('../../lib/constants');
+const { detectMeasurementType, extractSensorSlot, computeCapabilityId } = require('../../lib/utils');
 
 class OpenAirMiniDriver extends Homey.Driver {
 
@@ -67,6 +68,7 @@ class OpenAirMiniDriver extends Homey.Driver {
    */
   onPair(session) {
     let selectedDevice = null;
+    let discoveredEntities = [];
     let credentials = {
       host: '',
       port: ESPHOME.DEFAULT_PORT,
@@ -162,6 +164,8 @@ class OpenAirMiniDriver extends Homey.Driver {
 
         this.log(`Connection successful! Found ${result.entities?.length || 0} entities`);
 
+        discoveredEntities = result.entities || [];
+
         return {
           success: true,
           entities: result.entities,
@@ -181,6 +185,20 @@ class OpenAirMiniDriver extends Homey.Driver {
         throw new Error(this.homey.__('pair.credentials.error_host_required'));
       }
 
+      // Build capabilities from discovered entities
+      const capabilities = ['dim', 'onoff', 'measure_fan_speed'];
+      for (const entity of discoveredEntities) {
+        if (entity.type !== 'sensor') continue;
+        const type = detectMeasurementType(entity.name);
+        if (!type) continue;
+        const slot = extractSensorSlot(entity.name);
+        const capId = computeCapabilityId(type, slot);
+        if (!capabilities.includes(capId)) {
+          capabilities.push(capId);
+        }
+      }
+      this.log('Built capabilities from discovered entities:', capabilities);
+
       const deviceName = selectedDevice?.name || 'Open AIR Mini';
       const deviceId = selectedDevice?.data?.id || `open-air-${credentials.host.replace(/\./g, '-')}`;
 
@@ -189,6 +207,7 @@ class OpenAirMiniDriver extends Homey.Driver {
         data: {
           id: deviceId,
         },
+        capabilities,
         settings: {
           host: credentials.host,
           port: credentials.port,

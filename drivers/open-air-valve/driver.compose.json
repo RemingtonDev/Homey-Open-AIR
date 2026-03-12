@@ -7,11 +7,7 @@
   "class": "blinds",
   "capabilities": [
     "windowcoverings_set",
-    "windowcoverings_state",
-    "measure_valve_position",
-    "measure_valve_closed",
-    "measure_temperature",
-    "measure_humidity"
+    "windowcoverings_state"
   ],
   "capabilitiesOptions": {
     "windowcoverings_set": {

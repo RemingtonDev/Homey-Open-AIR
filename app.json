@@ -344,10 +344,7 @@
       "capabilities": [
         "dim",
         "onoff",
-        "measure_fan_speed",
-        "measure_humidity",
-        "measure_rpm",
-        "measure_temperature"
+        "measure_fan_speed"
       ],
       "capabilitiesOptions": {
         "dim": {
@@ -837,11 +834,7 @@
       "class": "blinds",
       "capabilities": [
         "windowcoverings_set",
-        "windowcoverings_state",
-        "measure_valve_position",
-        "measure_valve_closed",
-        "measure_temperature",
-        "measure_humidity"
+        "windowcoverings_state"
       ],
       "capabilitiesOptions": {
         "windowcoverings_set": {
@@ -1175,9 +1168,9 @@
     "measure_fan_speed": {
       "type": "number",
       "title": {
-        "en": "Fan Speed",
-        "nl": "Ventilatorsnelheid",
-        "fr": "Vitesse du ventilateur"
+        "en": "Fan Speed (%)",
+        "nl": "Ventilatorsnelheid (%)",
+        "fr": "Vitesse du ventilateur (%)"
       },
       "getable": true,
       "setable": false,

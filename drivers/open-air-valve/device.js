@@ -3,7 +3,7 @@
 const Homey = require('homey');
 const EspHomeClient = require('../../lib/EspHomeClient');
 const { ESPHOME, COMMAND } = require('../../lib/constants');
-const { roundToDecimals, SENSOR_TYPES, extractSensorSlot, detectMeasurementType, computeCapabilityId } = require('../../lib/utils');
+const { roundToDecimals, isValveOrCover, SENSOR_TYPES, extractSensorSlot, detectMeasurementType, computeCapabilityId } = require('../../lib/utils');
 
 // Localized base titles per measurement type for slot labeling
 const SLOT_TITLES = {
@@ -121,8 +121,8 @@ class OpenAirValveDevice extends Homey.Device {
 
     this.log(`Mapping entity: ${name} (type: ${entity.type}, key: ${key})`);
 
-    // Map valve entity
-    if (type === 'valve') {
+    // Map valve or cover entity
+    if (isValveOrCover(type)) {
       this.entityKeys.valve = key;
       this.log(`Mapped valve entity: ${name} (key: ${key})`);
       return;
@@ -231,11 +231,17 @@ class OpenAirValveDevice extends Homey.Device {
   async _handleStateChange(type, entity, state) {
     const key = entity?.key;
 
+    // Safety net: if we receive state data but device is marked unavailable, restore it
+    if (!this._destroyed && !this.getAvailable()) {
+      this.log('Received state while unavailable — restoring availability');
+      this.setAvailable();
+    }
+
     this.log(`State change for key ${key} (${type}):`, state);
 
     try {
-      // Valve state
-      if (key === this.entityKeys.valve && type === 'valve') {
+      // Valve state (also accept cover entities)
+      if (key === this.entityKeys.valve && isValveOrCover(type)) {
         // Position: 0 (closed) to 1 (open)
         if (typeof state.position === 'number') {
           await this.setCapabilityValue('windowcoverings_set', state.position);

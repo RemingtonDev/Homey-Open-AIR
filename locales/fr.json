@@ -25,7 +25,8 @@
       "error_invalid_password": "Mot de passe API invalide. Vérifiez le mot de passe dans votre YAML ESPHome sous api: password:",
       "error_auth_failed": "Échec de l'authentification. Vérifiez votre clé de chiffrement ou votre mot de passe.",
       "error_encryption_failed": "Échec du handshake de chiffrement. Vérifiez votre clé de chiffrement.",
-      "error_wrong_device_type": "Cet appareil n'est pas compatible avec ce pilote. Veuillez utiliser le bon pilote pour votre appareil."
+      "error_wrong_device_type": "Cet appareil n'est pas compatible avec ce pilote. Veuillez utiliser le bon pilote pour votre appareil.",
+      "error_no_valve_or_cover_entity": "Aucune entité vanne ou cover trouvée sur cet appareil. Assurez-vous que votre firmware ESPHome inclut un composant vanne ou cover."
     }
   },
   "errors": {

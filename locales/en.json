@@ -25,7 +25,8 @@
       "error_invalid_password": "Invalid API password. Check the password in your ESPHome YAML under api: password:",
       "error_auth_failed": "Authentication failed. Check your encryption key or password.",
       "error_encryption_failed": "Encryption handshake failed. Check your encryption key.",
-      "error_wrong_device_type": "This device is not compatible with this driver. Please use the correct driver for your device."
+      "error_wrong_device_type": "This device is not compatible with this driver. Please use the correct driver for your device.",
+      "error_no_valve_or_cover_entity": "No valve or cover entity found on this device. Make sure your ESPHome firmware includes a valve or cover component."
     }
   },
   "errors": {

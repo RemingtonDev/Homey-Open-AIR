@@ -3,6 +3,7 @@
 const Homey = require('homey');
 const EspHomeClient = require('../../lib/EspHomeClient');
 const { ESPHOME } = require('../../lib/constants');
+const { isValveOrCover, detectMeasurementType, extractSensorSlot, computeCapabilityId } = require('../../lib/utils');
 
 class OpenAirValveDriver extends Homey.Driver {
 
@@ -62,6 +63,7 @@ class OpenAirValveDriver extends Homey.Driver {
 
   onPair(session) {
     let selectedDevice = null;
+    let discoveredEntities = [];
     let credentials = {
       host: '',
       port: ESPHOME.DEFAULT_PORT,
@@ -128,7 +130,18 @@ class OpenAirValveDriver extends Homey.Driver {
           this,
         );
 
-        this.log('testConnection result:', { success: result.success, error: result.error, entityCount: result.entities?.length || 0 });
+        this.log('testConnection result:', {
+          success: result.success,
+          error: result.error,
+          errorType: result.errorType || null,
+          apiVersion: result.apiVersion,
+          entityCount: result.entities?.length || 0,
+        });
+        if (result.entities?.length) {
+          this.log('Discovered entities:', result.entities.map(e => `${e.name} (type: ${e.type}, key: ${e.key})`).join(', '));
+        } else {
+          this.log('No entities discovered during test connection');
+        }
 
         if (!result.success) {
           const errorKey = result.errorType
@@ -141,12 +154,23 @@ class OpenAirValveDriver extends Homey.Driver {
           throw new Error(errorMsg);
         }
 
-        const hasValve = result.entities?.some(e => e.type === 'valve');
+        const valveEntities = result.entities?.filter(e => isValveOrCover(e.type)) || [];
+        this.log(
+          'Valve/cover candidates:',
+          valveEntities.length
+            ? valveEntities.map(e => `${e.name} (type: ${e.type}, key: ${e.key})`).join(', ')
+            : 'none',
+        );
+
+        const hasValve = valveEntities.length > 0;
         if (!hasValve) {
-          throw new Error(this.homey.__('pair.credentials.error_wrong_device_type'));
+          this.log('Rejecting device: no valve or cover entity found among discovered entities');
+          throw new Error(this.homey.__('pair.credentials.error_no_valve_or_cover_entity'));
         }
 
         this.log(`Connection successful! Found ${result.entities?.length || 0} entities`);
+
+        discoveredEntities = result.entities || [];
 
         return {
           success: true,
@@ -166,6 +190,30 @@ class OpenAirValveDriver extends Homey.Driver {
         throw new Error(this.homey.__('pair.credentials.error_host_required'));
       }
 
+      // Build capabilities from discovered entities
+      const capabilities = ['windowcoverings_set', 'windowcoverings_state'];
+      for (const entity of discoveredEntities) {
+        // Valve/cover entity → add valve position capability
+        if (isValveOrCover(entity.type) && !capabilities.includes('measure_valve_position')) {
+          capabilities.push('measure_valve_position');
+        }
+        // Binary sensor with "closed" in name → add valve closed capability
+        if (entity.type === 'binary_sensor' && entity.name.toLowerCase().includes('closed') && !capabilities.includes('measure_valve_closed')) {
+          capabilities.push('measure_valve_closed');
+        }
+        // Sensor entities → detect type (skip rpm for valve driver)
+        if (entity.type === 'sensor') {
+          const type = detectMeasurementType(entity.name);
+          if (!type || type === 'rpm') continue;
+          const slot = extractSensorSlot(entity.name);
+          const capId = computeCapabilityId(type, slot);
+          if (!capabilities.includes(capId)) {
+            capabilities.push(capId);
+          }
+        }
+      }
+      this.log('Built capabilities from discovered entities:', capabilities);
+
       const deviceName = selectedDevice?.name || 'Open AIR Valve';
       const deviceId = selectedDevice?.data?.id || `open-air-valve-${credentials.host.replace(/\./g, '-')}`;
 
@@ -174,6 +222,7 @@ class OpenAirValveDriver extends Homey.Driver {
         data: {
           id: deviceId,
         },
+        capabilities,
         settings: {
           host: credentials.host,
           port: credentials.port,

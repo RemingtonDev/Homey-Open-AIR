@@ -25,7 +25,8 @@
       "error_invalid_password": "Ongeldig API-wachtwoord. Controleer het wachtwoord in je ESPHome YAML onder api: password:",
       "error_auth_failed": "Authenticatie mislukt. Controleer je encryptiesleutel of wachtwoord.",
       "error_encryption_failed": "Encryptie-handshake mislukt. Controleer je encryptiesleutel.",
-      "error_wrong_device_type": "Dit apparaat is niet compatibel met dit stuurprogramma. Gebruik het juiste stuurprogramma voor je apparaat."
+      "error_wrong_device_type": "Dit apparaat is niet compatibel met dit stuurprogramma. Gebruik het juiste stuurprogramma voor je apparaat.",
+      "error_no_valve_or_cover_entity": "Geen klep- of cover-entiteit gevonden op dit apparaat. Zorg ervoor dat je ESPHome firmware een klep- of cover-component bevat."
     }
   },
   "errors": {

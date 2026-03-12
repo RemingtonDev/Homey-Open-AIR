@@ -91,6 +91,14 @@ class OpenAirMiniDevice extends Homey.Device {
 
       // Fix corrupted dim value if outside 0-1 range (from previous buggy code)
       await this._fixCorruptedDimValue();
+
+      // Disable auto-curve if no humidity sensor was discovered
+      const hasHumidity = Object.values(this.entityKeys.sensorMap)
+        .some(m => m.capabilityId.startsWith('measure_humidity'));
+      if (!hasHumidity && this.getSetting('auto_curve_enabled')) {
+        this.log('No humidity sensor found — disabling auto fan curve');
+        this._stopAutoCurve();
+      }
     });
 
     this.client.on('disconnected', () => {
@@ -263,6 +271,12 @@ class OpenAirMiniDevice extends Homey.Device {
    */
   async _handleStateChange(type, entity, state) {
     const key = entity?.key;
+
+    // Safety net: if we receive state data but device is marked unavailable, restore it
+    if (!this._destroyed && !this.getAvailable()) {
+      this.log('Received state while unavailable — restoring availability');
+      this.setAvailable();
+    }
 
     this.log(`State change for key ${key} (${type}):`, state);
 
