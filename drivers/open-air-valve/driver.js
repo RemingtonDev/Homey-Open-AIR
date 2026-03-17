@@ -128,6 +128,7 @@ class OpenAirValveDriver extends Homey.Driver {
           credentials.encryptionKey || null,
           credentials.password || null,
           this,
+          'open-air-valve-pair',
         );
 
         this.log('testConnection result:', {
@@ -260,6 +261,7 @@ class OpenAirValveDriver extends Homey.Driver {
         data.encryptionKey || null,
         data.password || null,
         this,
+        'open-air-valve-repair',
       );
 
       if (!result.success) {
