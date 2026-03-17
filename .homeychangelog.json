@@ -19,5 +19,8 @@
   },
   "1.2.0": {
     "en": "Dynamic sensor capabilities: only sensors actually present on the device are added during pairing (no more empty tiles). Added ESPHome cover component compatibility for Valve driver. Improved device availability recovery and reconnect handling."
+  },
+  "1.2.1": {
+    "en": "Adding extra logging and a potential fix for legacy ESPHome crashes."
   }
 }
