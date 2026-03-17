@@ -1,13 +1,39 @@
 'use strict';
 
 const Homey = require('homey');
+const diagnostics = require('./lib/runtimeDiagnostics');
+
+let fatalDiagnosticsRegistered = false;
 
 class OpenAirApp extends Homey.App {
 
   async onInit() {
     this.log('Open AIR app has been initialized');
 
+    this._registerFatalDiagnostics();
     this._registerFlowCards();
+  }
+
+  _registerFatalDiagnostics() {
+    if (fatalDiagnosticsRegistered) {
+      return;
+    }
+    fatalDiagnosticsRegistered = true;
+
+    process.on('uncaughtExceptionMonitor', (error, origin) => {
+      this.error(
+        'Fatal uncaught exception observed:',
+        diagnostics.stringifyFatalReport('uncaughtExceptionMonitor', error, { origin }),
+      );
+    });
+
+    process.on('unhandledRejection', (reason) => {
+      const error = reason instanceof Error ? reason : new Error(String(reason));
+      this.error(
+        'Unhandled rejection observed:',
+        diagnostics.stringifyFatalReport('unhandledRejection', error),
+      );
+    });
   }
 
   _registerFlowCards() {

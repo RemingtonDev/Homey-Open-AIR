@@ -76,6 +76,7 @@ class OpenAirMiniDevice extends Homey.Device {
       port,
       encryptionKey: store.encryptionKey || null,
       password: store.password || null,
+      diagnosticsLabel: 'open-air-mini-runtime',
       logger: this,
     });
 

@@ -5,6 +5,9 @@
   "main": "app.js",
   "license": "GPL-3.0-only",
   "author": "RemingtonDev",
+  "scripts": {
+    "test": "node test/legacy-crash-guard.test.js"
+  },
   "repository": {
     "type": "git",
     "url": "https://github.com/RemingtonDev/Homey-Open-AIR.git"

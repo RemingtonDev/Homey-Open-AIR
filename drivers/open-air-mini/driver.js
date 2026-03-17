@@ -142,6 +142,7 @@ class OpenAirMiniDriver extends Homey.Driver {
           credentials.encryptionKey || null,
           credentials.password || null,
           this,
+          'open-air-mini-pair',
         );
 
         this.log('testConnection result:', { success: result.success, error: result.error, entityCount: result.entities?.length || 0 });
@@ -249,6 +250,7 @@ class OpenAirMiniDriver extends Homey.Driver {
         data.encryptionKey || null,
         data.password || null,
         this,
+        'open-air-mini-repair',
       );
 
       if (!result.success) {

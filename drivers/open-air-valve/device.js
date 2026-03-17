@@ -57,6 +57,7 @@ class OpenAirValveDevice extends Homey.Device {
       port,
       encryptionKey: store.encryptionKey || null,
       password: store.password || null,
+      diagnosticsLabel: 'open-air-valve-runtime',
       logger: this,
     });
 
