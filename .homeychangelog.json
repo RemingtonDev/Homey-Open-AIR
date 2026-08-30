@@ -22,5 +22,8 @@
   },
   "1.2.1": {
     "en": "Adding extra logging and a potential fix for legacy ESPHome crashes."
+  },
+  "1.2.2": {
+    "en": "Fixed humidity-based fan control with multiple sensors. The automatic fan curve and humidity Flow action now use the highest valid reading across connected humidity sensors, including sensor 2, and ignore stale or missing readings."
   }
 }
