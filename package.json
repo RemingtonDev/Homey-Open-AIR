@@ -2,12 +2,12 @@
   "name": "com.remingtondev.open-air-mini",
   "version": "1.0.3",
   "description": "Homey app for controlling Open AIR ventilation devices via ESPHome",
+  "scripts": {
+    "test": "node test/legacy-crash-guard.test.js && node test/humidity-reading.test.js"
+  },
   "main": "app.js",
   "license": "GPL-3.0-only",
   "author": "RemingtonDev",
-  "scripts": {
-    "test": "node test/legacy-crash-guard.test.js"
-  },
   "repository": {
     "type": "git",
     "url": "https://github.com/RemingtonDev/Homey-Open-AIR.git"

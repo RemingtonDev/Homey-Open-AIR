@@ -2,6 +2,7 @@
 
 const Homey = require('homey');
 const diagnostics = require('./lib/runtimeDiagnostics');
+const { getHighestHumidityReading } = require('./lib/utils');
 
 let fatalDiagnosticsRegistered = false;
 
@@ -40,7 +41,15 @@ class OpenAirApp extends Homey.App {
     // --- Fan flow actions ---
     const adjustFanSpeedAction = this.homey.flow.getActionCard('adjust-fan-speed-humidity');
     adjustFanSpeedAction.registerRunListener(async (args) => {
-      const humidity = args.device.getCapabilityValue('measure_humidity');
+      const humidity = typeof args.device.getHumidityForControl === 'function'
+        ? args.device.getHumidityForControl()
+        : getHighestHumidityReading(
+          args.device.getCapabilityValue.bind(args.device),
+          args.device.entityKeys?.sensorMap,
+          typeof args.device.hasCapability === 'function'
+            ? args.device.hasCapability.bind(args.device)
+            : undefined,
+        );
 
       if (humidity === null || humidity === undefined) {
         throw new Error(this.homey.__('errors.no_humidity'));

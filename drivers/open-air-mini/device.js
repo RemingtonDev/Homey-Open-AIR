@@ -3,7 +3,17 @@
 const Homey = require('homey');
 const EspHomeClient = require('../../lib/EspHomeClient');
 const { ESPHOME, COMMAND, AUTO_CURVE } = require('../../lib/constants');
-const { createEntityKeys, fixCorruptedDimValue, clampDimValue, roundToDecimals, SENSOR_TYPES, extractSensorSlot, detectMeasurementType, computeCapabilityId } = require('../../lib/utils');
+const {
+  createEntityKeys,
+  fixCorruptedDimValue,
+  clampDimValue,
+  roundToDecimals,
+  SENSOR_TYPES,
+  extractSensorSlot,
+  detectMeasurementType,
+  computeCapabilityId,
+  getHighestHumidityReading,
+} = require('../../lib/utils');
 
 // Localized base titles per measurement type for slot labeling
 const SLOT_TITLES = {
@@ -24,6 +34,9 @@ class OpenAirMiniDevice extends Homey.Device {
     this.entityKeys = createEntityKeys();
     this._destroyed = false;
     this._slotTitleFlags = {}; // tracks which measurement types have had slot 1 relabeled
+    // A capability value can outlive the ESPHome state that produced it.
+    // Readings are invalidated when ESPHome reports them missing or disconnects.
+    this._invalidHumidityCapabilities = new Set();
 
     // Auto-curve state
     this._autoCurveTimer = null;
@@ -104,6 +117,7 @@ class OpenAirMiniDevice extends Homey.Device {
 
     this.client.on('disconnected', () => {
       this.log('Disconnected from Open AIR Mini');
+      this._invalidateHumidityReadings();
       if (!this._destroyed) {
         this.setUnavailable(this.homey.__('errors.disconnected') || 'Device disconnected');
       }
@@ -194,6 +208,8 @@ class OpenAirMiniDevice extends Homey.Device {
     const slot = extractSensorSlot(name);
     const capabilityId = computeCapabilityId(measurementType, slot);
     const sensorType = SENSOR_TYPES[measurementType];
+    const capabilityAlreadyMapped = Object.values(this.entityKeys.sensorMap)
+      .some(mapping => mapping.capabilityId === capabilityId);
 
     try {
       // Dynamically add capability if not already present
@@ -215,10 +231,33 @@ class OpenAirMiniDevice extends Homey.Device {
         settingKey: sensorType.settingKey,
         defaultDecimals: sensorType.defaultDecimals,
       };
-
+      if (measurementType === 'humidity' && !capabilityAlreadyMapped) {
+        // Ignore persisted Homey values until ESPHome confirms a fresh state.
+        this._invalidHumidityCapabilities.add(capabilityId);
+      }
       this.log(`Mapped sensor: ${name} → ${capabilityId} (key: ${key}, slot: ${slot})`);
     } catch (err) {
       this.error(`Failed to map ${measurementType} entity (${name}):`, err);
+    }
+  }
+
+  /**
+   * Mark all mapped humidity readings as stale after a disconnect.
+   */
+  _invalidateHumidityReadings() {
+    if (!this._invalidHumidityCapabilities) {
+      this._invalidHumidityCapabilities = new Set();
+    }
+
+    const baseCapability = SENSOR_TYPES.humidity.base;
+    this._invalidHumidityCapabilities.add(baseCapability);
+
+    for (const mapping of Object.values(this.entityKeys?.sensorMap || {})) {
+      const capabilityId = mapping?.capabilityId;
+      if (typeof capabilityId === 'string'
+        && (capabilityId === baseCapability || capabilityId.startsWith(`${baseCapability}.`))) {
+        this._invalidHumidityCapabilities.add(capabilityId);
+      }
     }
   }
 
@@ -302,9 +341,19 @@ class OpenAirMiniDevice extends Homey.Device {
       if (type === 'sensor') {
         const mapping = this.entityKeys.sensorMap[key];
         if (!mapping) return;
-        if (typeof state.state === 'number' && !state.missingState) {
+        const isValidReading = Number.isFinite(state?.state) && !state.missingState;
+        const isHumidity = mapping.capabilityId === SENSOR_TYPES.humidity.base
+          || mapping.capabilityId.startsWith(`${SENSOR_TYPES.humidity.base}.`);
+
+        if (isValidReading) {
           const decimals = parseInt(this.getSetting(mapping.settingKey) ?? String(mapping.defaultDecimals), 10);
           await this.setCapabilityValue(mapping.capabilityId, roundToDecimals(state.state, decimals));
+          if (isHumidity) {
+            this._invalidHumidityCapabilities.delete(mapping.capabilityId);
+          }
+        } else if (isHumidity) {
+          // Do not let a previous high humidity value keep driving the fan.
+          this._invalidHumidityCapabilities.add(mapping.capabilityId);
         }
       }
     } catch (error) {
@@ -384,6 +433,23 @@ class OpenAirMiniDevice extends Homey.Device {
   // ── Auto Fan Curve ──────────────────────────────────────────────────
 
   /**
+   * Return the highest fresh humidity reading available for fan control.
+   *
+   * The regular Homey capability values are retained for display, but a
+   * missing/disconnected ESPHome state invalidates the value for control.
+   *
+   * @returns {number|null} Highest fresh humidity value, or null when absent
+   */
+  getHumidityForControl() {
+    return getHighestHumidityReading(
+      this.getCapabilityValue.bind(this),
+      this.entityKeys?.sensorMap,
+      this.hasCapability.bind(this),
+      (capabilityId) => !this._invalidHumidityCapabilities?.has(capabilityId),
+    );
+  }
+
+  /**
    * Initialize (or reinitialize) the auto fan curve timer.
    */
   _initAutoCurve() {
@@ -437,8 +503,8 @@ class OpenAirMiniDevice extends Homey.Device {
       }
 
       // Read humidity
-      const humidity = this.getCapabilityValue('measure_humidity');
-      if (humidity === null || humidity === undefined) {
+      const humidity = this.getHumidityForControl();
+      if (humidity === null) {
         this.log('Auto fan curve tick skipped: no humidity reading');
         return;
       }
@@ -534,6 +600,7 @@ class OpenAirMiniDevice extends Homey.Device {
     this.log('Reconnecting to device...');
 
     this._stopAutoCurve();
+    this._invalidateHumidityReadings();
 
     if (this.client) {
       this.client.disconnect();
