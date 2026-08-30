@@ -1,6 +1,6 @@
 {
   "name": "com.remingtondev.open-air-mini",
-  "version": "1.0.3",
+  "version": "1.2.4",
   "description": "Homey app for controlling Open AIR ventilation devices via ESPHome",
   "scripts": {
     "postinstall": "patch-package --error-on-fail",
