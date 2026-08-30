@@ -28,5 +28,8 @@
   },
   "1.2.3": {
     "en": "Prevented legacy ESPHome protocol frames from crashing the app. Unsupported or malformed frames are now handled safely and reported for diagnostics."
+  },
+  "1.2.4": {
+    "en": "Separated Mini and Valve discovery so each device is shown with its correct driver icon."
   }
 }

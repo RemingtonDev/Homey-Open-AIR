@@ -4,7 +4,7 @@
   "description": "Homey app for controlling Open AIR ventilation devices via ESPHome",
   "scripts": {
     "postinstall": "patch-package --error-on-fail",
-    "test": "node test/legacy-frame-parser.test.js && node test/legacy-crash-guard.test.js && node test/humidity-reading.test.js"
+    "test": "node test/discovery-routing.test.js && node test/legacy-frame-parser.test.js && node test/legacy-crash-guard.test.js && node test/humidity-reading.test.js"
   },
   "main": "app.js",
   "license": "GPL-3.0-only",

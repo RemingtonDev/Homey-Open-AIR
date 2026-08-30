@@ -1,0 +1,19 @@
+{
+  "type": "mdns-sd",
+  "mdns-sd": {
+    "name": "_esphomelib",
+    "protocol": "tcp"
+  },
+  "id": "{{name}}",
+  "conditions": [
+    [
+      {
+        "field": "name",
+        "match": {
+          "type": "regex",
+          "value": "^open-air-valve(?:-|\\.|$)"
+        }
+      }
+    ]
+  ]
+}

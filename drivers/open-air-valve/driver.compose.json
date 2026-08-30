@@ -36,7 +36,7 @@
   },
   "platforms": ["local"],
   "connectivity": ["lan"],
-  "discovery": "open-air",
+  "discovery": "open-air-valve",
   "pair": [
     {
       "id": "list_devices",

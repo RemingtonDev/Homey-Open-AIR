@@ -38,7 +38,7 @@
   },
   "platforms": ["local"],
   "connectivity": ["lan"],
-  "discovery": "open-air",
+  "discovery": "open-air-mini",
   "pair": [
     {
       "id": "list_devices",

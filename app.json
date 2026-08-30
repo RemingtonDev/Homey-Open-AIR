@@ -1,7 +1,7 @@
 {
   "_comment": "This file is generated. Please edit .homeycompose/app.json instead.",
   "id": "com.remingtondev.open-air-mini",
-  "version": "1.2.3",
+  "version": "1.2.4",
   "compatibility": ">=5.0.0",
   "sdk": 3,
   "platforms": [
@@ -378,7 +378,7 @@
       "connectivity": [
         "lan"
       ],
-      "discovery": "open-air",
+      "discovery": "open-air-mini",
       "pair": [
         {
           "id": "list_devices",
@@ -867,7 +867,7 @@
       "connectivity": [
         "lan"
       ],
-      "discovery": "open-air",
+      "discovery": "open-air-valve",
       "pair": [
         {
           "id": "list_devices",
@@ -1274,13 +1274,43 @@
     }
   },
   "discovery": {
-    "open-air": {
+    "open-air-mini": {
       "type": "mdns-sd",
       "mdns-sd": {
         "name": "_esphomelib",
         "protocol": "tcp"
       },
-      "id": "{{name}}"
+      "id": "{{name}}",
+      "conditions": [
+        [
+          {
+            "field": "name",
+            "match": {
+              "type": "regex",
+              "value": "^open-air-mini(?:-|\\.|$)"
+            }
+          }
+        ]
+      ]
+    },
+    "open-air-valve": {
+      "type": "mdns-sd",
+      "mdns-sd": {
+        "name": "_esphomelib",
+        "protocol": "tcp"
+      },
+      "id": "{{name}}",
+      "conditions": [
+        [
+          {
+            "field": "name",
+            "match": {
+              "type": "regex",
+              "value": "^open-air-valve(?:-|\\.|$)"
+            }
+          }
+        ]
+      ]
     }
   }
 }
