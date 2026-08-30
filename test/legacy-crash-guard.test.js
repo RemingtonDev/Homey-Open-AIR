@@ -10,6 +10,7 @@ class FakeLegacyClient extends EventEmitter {
   constructor() {
     super();
     this.connection = new EventEmitter();
+    this.connection.frameHelper = new EventEmitter();
     this.disconnectCalled = false;
     FakeLegacyClient.instances.push(this);
   }
@@ -59,6 +60,25 @@ async function testLegacyDisconnectSuppressesLateConnectionErrors() {
 
   const client = FakeLegacyClient.instances.at(-1);
   assert.ok(client, 'expected fake legacy client instance');
+
+  client.connection.frameHelper.emit('unsupportedMessage', {
+    messageId: 109,
+    transport: 'noise',
+    declaredLength: 4,
+    actualLength: 4,
+  });
+  client.connection.frameHelper.emit('unsupportedMessage', {
+    messageId: 109,
+    transport: 'noise',
+    declaredLength: 4,
+    actualLength: 4,
+  });
+
+  const unsupportedDiagnostics = diagnostics.filter(
+    ({ event }) => event === 'legacy_unsupported_message',
+  );
+  assert.equal(unsupportedDiagnostics.length, 1, 'expected one diagnostic per message ID');
+  assert.equal(unsupportedDiagnostics[0].details.messageId, 109);
 
   assert.doesNotThrow(() => adapter.disconnect());
   assert.doesNotThrow(() => {

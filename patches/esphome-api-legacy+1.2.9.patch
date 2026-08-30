@@ -1,0 +1,223 @@
+diff --git a/node_modules/esphome-api-legacy/lib/utils/frameHelper.js b/node_modules/esphome-api-legacy/lib/utils/frameHelper.js
+index f9c2baf..dabe502 100644
+--- a/node_modules/esphome-api-legacy/lib/utils/frameHelper.js
++++ b/node_modules/esphome-api-legacy/lib/utils/frameHelper.js
+@@ -8,6 +8,7 @@ class FrameHelper extends EventEmitter {
+         this.host = host;
+         this.port = port;
+         this.buffer = Buffer.from([]);
++        this.protocolFailed = false;
+         this.socket = new Net.Socket();
+         this.socket.on("close", () => this.emit("close"));
+         this.socket.on("error", (e) => {
+@@ -17,6 +18,8 @@ class FrameHelper extends EventEmitter {
+     }
+ 
+     connect() {
++        this.protocolFailed = false;
++        this.buffer = Buffer.from([]);
+         this.socket.connect(this.port, this.host);
+     }
+ 
+@@ -33,11 +36,51 @@ class FrameHelper extends EventEmitter {
+         super.removeAllListeners();
+     }
+ 
+-    buildMessage(messageId, bytes) {
++    createProtocolError(code, message, details = {}) {
++        const error = new Error(message);
++        error.code = code;
++        Object.assign(error, details);
++        return error;
++    }
++
++    closeOnProtocolError(error) {
++        if (this.protocolFailed) return;
++        this.protocolFailed = true;
++        this.buffer = Buffer.from([]);
++        if (!error.code) error.code = "PROTOCOL_ERROR";
++        try {
++            this.emit("error", error);
++        } finally {
++            this.destroy();
++        }
++    }
++
++    buildMessage(messageId, bytes, { transport, declaredLength, actualLength } = {}) {
++        const type = id_to_type[messageId];
++        const Message = type && pb[type];
++
++        if (!Message || typeof Message.deserializeBinary !== "function") {
++            this.emit("unsupportedMessage", {
++                messageId,
++                transport,
++                declaredLength,
++                actualLength,
++            });
++            return null;
++        }
++
+         try {
+-            return pb[id_to_type[messageId]].deserializeBinary(bytes);
+-        } catch(e) {
+-            this.emit('error', new Error(`Failed find message type for Id: ${messageId}`));
++            const message = Message.deserializeBinary(bytes);
++            if (!message) {
++                throw new Error("Deserializer returned no message");
++            }
++            return message;
++        } catch (cause) {
++            throw this.createProtocolError(
++                "MALFORMED_MESSAGE",
++                `Failed to decode message type for Id: ${messageId}`,
++                { messageId, transport, declaredLength, actualLength, cause }
++            );
+         }
+     }
+ }
+diff --git a/node_modules/esphome-api-legacy/lib/utils/index.js b/node_modules/esphome-api-legacy/lib/utils/index.js
+index e8fea7e..36fdce8 100644
+--- a/node_modules/esphome-api-legacy/lib/utils/index.js
++++ b/node_modules/esphome-api-legacy/lib/utils/index.js
+@@ -20,10 +20,17 @@ function bytes_to_varuint(bytes) {
+     return null
+ }
+ function recv_varuint(next) {
+-    const raw = [ next() ];
+-    while (raw[raw.length - 1] !== null && raw[raw.length - 1] & 0x80) raw.push(next());
+-    if (raw[raw.length - 1] === null) return null;
+-    return bytes_to_varuint(Buffer.from(raw));
++    let result = 0;
++    for (let index = 0; index < 5; index++) {
++        const byte = next();
++        if (byte === null) return null;
++        if (index === 4 && (byte & 0xF0) !== 0) {
++            throw new RangeError("Varuint exceeds 32 bits");
++        }
++        result += (byte & 0x7F) * (2 ** (index * 7));
++        if ((byte & 0x80) === 0) return result;
++    }
++    throw new RangeError("Varuint exceeds 5 bytes");
+ }
+ module.exports = {
+     varuint_to_bytes,
+diff --git a/node_modules/esphome-api-legacy/lib/utils/noiseFrameHelper.js b/node_modules/esphome-api-legacy/lib/utils/noiseFrameHelper.js
+index a07678d..234d02c 100644
+--- a/node_modules/esphome-api-legacy/lib/utils/noiseFrameHelper.js
++++ b/node_modules/esphome-api-legacy/lib/utils/noiseFrameHelper.js
+@@ -53,6 +53,7 @@ class NoiseFrameHelper extends FrameHelper {
+     }
+ 
+     onData(data) {
++        if (this.protocolFailed) return;
+         this.emit("data", data);
+         this.buffer = Buffer.concat([this.buffer, data]);
+         let frame;
+@@ -67,11 +68,13 @@ class NoiseFrameHelper extends FrameHelper {
+                         const message = this.deserialize(
+                             this.decryptor.DecryptWithAd([], frame)
+                         );
++                        if (!message) continue;
++                        if (message.unsupportedMessage) continue;
+                         this.emit("message", message);
+                 }
+             }
+         } catch (e) {
+-            this.emit("error", e);
++            this.closeOnProtocolError(e);
+             this.emit("unhandledData", data);
+         }
+     }
+@@ -124,10 +127,45 @@ class NoiseFrameHelper extends FrameHelper {
+     }
+ 
+     deserialize(buffer) {
+-        if (buffer.length < 4) return null;
++        if (buffer.length < 4) {
++            throw this.createProtocolError(
++                "MALFORMED_FRAME",
++                "Noise message is shorter than its header",
++                { transport: "noise", actualLength: buffer.length }
++            );
++        }
++
+         const messageId = (buffer[0] << 8) | buffer[1];
+         const messageLength = (buffer[2] << 8) | buffer[3];
+-        const message = this.buildMessage(messageId, buffer.subarray(4, messageLength + 4));
++        const actualLength = buffer.length - 4;
++        if (messageLength !== actualLength) {
++            throw this.createProtocolError(
++                "MALFORMED_FRAME",
++                `Noise message length mismatch for Id: ${messageId}`,
++                {
++                    messageId,
++                    transport: "noise",
++                    declaredLength: messageLength,
++                    actualLength,
++                }
++            );
++        }
++
++        const message = this.buildMessage(
++            messageId,
++            buffer.subarray(4),
++            {
++                transport: "noise",
++                declaredLength: messageLength,
++                actualLength,
++            }
++        );
++        if (!message) {
++            return {
++                unsupportedMessage: true,
++                length: messageLength + 4,
++            };
++        }
+         message.length = messageLength + 4;
+         return message;
+     }
+diff --git a/node_modules/esphome-api-legacy/lib/utils/plaintextFrameHelper.js b/node_modules/esphome-api-legacy/lib/utils/plaintextFrameHelper.js
+index 8bb8dfe..a872b3c 100644
+--- a/node_modules/esphome-api-legacy/lib/utils/plaintextFrameHelper.js
++++ b/node_modules/esphome-api-legacy/lib/utils/plaintextFrameHelper.js
+@@ -42,22 +42,38 @@ class PlaintextFrameHelper extends FrameHelper {
+         if (messageLength + offset > buffer.length)
+             return null;
+ 
+-        const message = this.buildMessage(messageId, buffer.subarray(offset, messageLength + offset));
++        const message = this.buildMessage(
++            messageId,
++            buffer.subarray(offset, messageLength + offset),
++            {
++                transport: "plaintext",
++                declaredLength: messageLength,
++                actualLength: messageLength,
++            }
++        );
++        if (!message) {
++            return {
++                unsupportedMessage: true,
++                length: messageLength + offset,
++            };
++        }
+         message.length = messageLength + offset;
+         return message;
+     }
+ 
+     onData(data) {
++        if (this.protocolFailed) return;
+         this.emit("data", data);
+         this.buffer = Buffer.concat([this.buffer, data]);
+         let message;
+         try {
+             while ((message = this.deserialize(this.buffer))) {
+                 this.buffer = this.buffer.slice(message.length);
++                if (message.unsupportedMessage) continue;
+                 this.emit("message", message);
+             }
+         } catch (e) {
+-            this.emit("error", e);
++            this.closeOnProtocolError(e);
+             this.emit("unhandledData", data);
+         }
+     }

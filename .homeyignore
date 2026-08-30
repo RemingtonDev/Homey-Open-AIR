@@ -30,3 +30,6 @@ test/
 tests/
 *.test.js
 *.spec.js
+
+# Install-time dependency patches (already applied before Homey packaging)
+patches/

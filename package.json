@@ -3,7 +3,8 @@
   "version": "1.0.3",
   "description": "Homey app for controlling Open AIR ventilation devices via ESPHome",
   "scripts": {
-    "test": "node test/legacy-crash-guard.test.js && node test/humidity-reading.test.js"
+    "postinstall": "patch-package --error-on-fail",
+    "test": "node test/legacy-frame-parser.test.js && node test/legacy-crash-guard.test.js && node test/humidity-reading.test.js"
   },
   "main": "app.js",
   "license": "GPL-3.0-only",
@@ -22,5 +23,8 @@
   "dependencies": {
     "esphome-client": "^1.2.1",
     "esphome-api-legacy": "npm:@2colors/esphome-native-api@1.2.9"
+  },
+  "devDependencies": {
+    "patch-package": "8.0.1"
   }
 }
