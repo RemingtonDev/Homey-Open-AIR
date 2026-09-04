@@ -39,11 +39,10 @@ As a proud owner of an Open AIR Mini and starting to fiddle with Homey, I wanted
 ### Valve (zone damper)
 
 - Open / close valve
-- Set valve position (0–100%)
-- Monitor valve position and closed state
-- Stop valve movement
+- Binary Open / Closed control only
+- Monitor live Open / Closed status from the homing sensor
 - Re-home valve (button entity)
-- Flow card actions: open, close, stop, set position, re-home
+- Flow card actions: open, close, re-home
 
 ## Setup
 

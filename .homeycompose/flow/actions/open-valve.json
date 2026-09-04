@@ -5,9 +5,9 @@
     "fr": "Ouvrir la vanne completement"
   },
   "hint": {
-    "en": "Opens the valve to 100%.",
-    "nl": "Opent de klep naar 100%.",
-    "fr": "Ouvre la vanne a 100%."
+    "en": "Opens the valve.",
+    "nl": "Opent de klep.",
+    "fr": "Ouvre la vanne."
   },
   "args": [
     {

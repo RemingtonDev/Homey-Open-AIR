@@ -27,6 +27,9 @@
     "measure_humidity": {
       "decimals": 1
     },
+    "measure_co2": {
+      "decimals": 0
+    },
     "onoff": {
       "title": {
         "en": "Fan",
@@ -95,17 +98,6 @@
           "type": "dropdown",
           "label": { "en": "Humidity Decimals", "nl": "Vochtigheid decimalen", "fr": "Décimales humidité" },
           "value": "1",
-          "values": [
-            { "id": "0", "label": { "en": "0", "nl": "0", "fr": "0" } },
-            { "id": "1", "label": { "en": "1", "nl": "1", "fr": "1" } },
-            { "id": "2", "label": { "en": "2", "nl": "2", "fr": "2" } }
-          ]
-        },
-        {
-          "id": "co2_decimals",
-          "type": "dropdown",
-          "label": { "en": "CO2 Decimals", "nl": "CO2 decimalen", "fr": "Décimales CO2" },
-          "value": "0",
           "values": [
             { "id": "0", "label": { "en": "0", "nl": "0", "fr": "0" } },
             { "id": "1", "label": { "en": "1", "nl": "1", "fr": "1" } },

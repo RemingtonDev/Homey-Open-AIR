@@ -41,11 +41,10 @@ Functies — Mini (ventilatie):
 
 Functies — Valve (zoneregister):
 - Klep openen / sluiten
-- Kleppositie instellen (0-100%)
-- Kleppositie en gesloten status monitoren
-- Klepbeweging stoppen
+- Alleen binaire bediening Open / Gesloten
+- Live Open / Gesloten status van de homingsensor monitoren
 - Klep opnieuw kalibreren (re-home)
-- Flow-kaartacties: openen, sluiten, stoppen, positie instellen, herkalibreren
+- Flow-kaartacties: openen, sluiten, herkalibreren
 
 Installatie:
 1. Voeg je Open AIR apparaat (Mini of Valve) toe in Homey

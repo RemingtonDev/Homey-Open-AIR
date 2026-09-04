@@ -1,8 +1,8 @@
 {
   "_comment": "This file is generated. Please edit .homeycompose/app.json instead.",
   "id": "com.remingtondev.open-air-mini",
-  "version": "1.2.4",
-  "compatibility": ">=5.0.0",
+  "version": "1.4.0",
+  "compatibility": ">=12.2.0",
   "sdk": 3,
   "platforms": [
     "local"
@@ -178,9 +178,9 @@
           "fr": "Fermer la vanne"
         },
         "hint": {
-          "en": "Closes the valve to 0%.",
-          "nl": "Sluit de klep naar 0%.",
-          "fr": "Ferme la vanne a 0%."
+          "en": "Closes the valve.",
+          "nl": "Sluit de klep.",
+          "fr": "Ferme la vanne."
         },
         "args": [
           {
@@ -198,9 +198,9 @@
           "fr": "Ouvrir la vanne completement"
         },
         "hint": {
-          "en": "Opens the valve to 100%.",
-          "nl": "Opent de klep naar 100%.",
-          "fr": "Ouvre la vanne a 100%."
+          "en": "Opens the valve.",
+          "nl": "Opent de klep.",
+          "fr": "Ouvre la vanne."
         },
         "args": [
           {
@@ -270,66 +270,6 @@
           }
         ],
         "id": "resume-auto-curve"
-      },
-      {
-        "title": {
-          "en": "Set valve position",
-          "nl": "Stel kleppositie in",
-          "fr": "Definir la position de la vanne"
-        },
-        "titleFormatted": {
-          "en": "Set valve to [[position]]%",
-          "nl": "Stel klep in op [[position]]%",
-          "fr": "Regler la vanne a [[position]]%"
-        },
-        "hint": {
-          "en": "Sets the valve to a specific opening percentage.",
-          "nl": "Stelt de klep in op een specifiek openingspercentage.",
-          "fr": "Regle la vanne sur un pourcentage d'ouverture specifique."
-        },
-        "args": [
-          {
-            "type": "device",
-            "name": "device",
-            "filter": "driver_id=open-air-valve"
-          },
-          {
-            "type": "number",
-            "name": "position",
-            "title": {
-              "en": "Position (%)",
-              "nl": "Positie (%)",
-              "fr": "Position (%)"
-            },
-            "placeholder": {
-              "en": "50"
-            },
-            "min": 0,
-            "max": 100,
-            "step": 1
-          }
-        ],
-        "id": "set-valve-position"
-      },
-      {
-        "title": {
-          "en": "Stop valve movement",
-          "nl": "Stop klepbeweging",
-          "fr": "Arreter le mouvement de la vanne"
-        },
-        "hint": {
-          "en": "Stops the valve at its current position.",
-          "nl": "Stopt de klep op de huidige positie.",
-          "fr": "Arrete la vanne a sa position actuelle."
-        },
-        "args": [
-          {
-            "type": "device",
-            "name": "device",
-            "filter": "driver_id=open-air-valve"
-          }
-        ],
-        "id": "stop-valve"
       }
     ]
   },
@@ -362,6 +302,9 @@
         },
         "measure_humidity": {
           "decimals": 1
+        },
+        "measure_co2": {
+          "decimals": 0
         },
         "onoff": {
           "title": {
@@ -493,42 +436,6 @@
                 "fr": "Décimales humidité"
               },
               "value": "1",
-              "values": [
-                {
-                  "id": "0",
-                  "label": {
-                    "en": "0",
-                    "nl": "0",
-                    "fr": "0"
-                  }
-                },
-                {
-                  "id": "1",
-                  "label": {
-                    "en": "1",
-                    "nl": "1",
-                    "fr": "1"
-                  }
-                },
-                {
-                  "id": "2",
-                  "label": {
-                    "en": "2",
-                    "nl": "2",
-                    "fr": "2"
-                  }
-                }
-              ]
-            },
-            {
-              "id": "co2_decimals",
-              "type": "dropdown",
-              "label": {
-                "en": "CO2 Decimals",
-                "nl": "CO2 decimalen",
-                "fr": "Décimales CO2"
-              },
-              "value": "0",
               "values": [
                 {
                   "id": "0",
@@ -831,34 +738,28 @@
         "nl": "Open AIR Klep",
         "fr": "Open AIR Vanne"
       },
-      "class": "blinds",
+      "class": "other",
       "capabilities": [
-        "windowcoverings_set",
-        "windowcoverings_state"
+        "onoff",
+        "measure_valve_closed"
       ],
       "capabilitiesOptions": {
-        "windowcoverings_set": {
+        "onoff": {
           "title": {
-            "en": "Valve Capacity",
-            "nl": "Klepcapaciteit",
-            "fr": "Capacité de la vanne"
+            "en": "Valve",
+            "nl": "Klep",
+            "fr": "Vanne"
           },
-          "min": 0,
-          "max": 1,
-          "step": 0.01
-        },
-        "windowcoverings_state": {
-          "title": {
-            "en": "Valve Control",
-            "nl": "Klepbediening",
-            "fr": "Contrôle de la vanne"
-          }
+          "quickAction": true
         },
         "measure_temperature": {
           "decimals": 1
         },
         "measure_humidity": {
           "decimals": 1
+        },
+        "measure_co2": {
+          "decimals": 0
         }
       },
       "platforms": [
@@ -946,42 +847,6 @@
                 "fr": "Décimales humidité"
               },
               "value": "1",
-              "values": [
-                {
-                  "id": "0",
-                  "label": {
-                    "en": "0",
-                    "nl": "0",
-                    "fr": "0"
-                  }
-                },
-                {
-                  "id": "1",
-                  "label": {
-                    "en": "1",
-                    "nl": "1",
-                    "fr": "1"
-                  }
-                },
-                {
-                  "id": "2",
-                  "label": {
-                    "en": "2",
-                    "nl": "2",
-                    "fr": "2"
-                  }
-                }
-              ]
-            },
-            {
-              "id": "co2_decimals",
-              "type": "dropdown",
-              "label": {
-                "en": "CO2 Decimals",
-                "nl": "CO2 decimalen",
-                "fr": "Décimales CO2"
-              },
-              "value": "0",
               "values": [
                 {
                   "id": "0",
@@ -1224,9 +1089,29 @@
     "measure_valve_closed": {
       "type": "boolean",
       "title": {
-        "en": "Valve Closed",
+        "en": "Valve Status",
+        "nl": "Klepstatus",
+        "fr": "État de la vanne"
+      },
+      "titleTrue": {
+        "en": "Closed",
+        "nl": "Gesloten",
+        "fr": "Fermée"
+      },
+      "titleFalse": {
+        "en": "Open",
+        "nl": "Open",
+        "fr": "Ouverte"
+      },
+      "insightsTitleTrue": {
+        "en": "Valve closed",
         "nl": "Klep gesloten",
-        "fr": "Vanne fermee"
+        "fr": "Vanne fermée"
+      },
+      "insightsTitleFalse": {
+        "en": "Valve opened",
+        "nl": "Klep geopend",
+        "fr": "Vanne ouverte"
       },
       "getable": true,
       "setable": false,

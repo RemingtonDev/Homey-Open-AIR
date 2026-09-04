@@ -2,7 +2,7 @@
 
 const Homey = require('homey');
 const EspHomeClient = require('../../lib/EspHomeClient');
-const { ESPHOME, COMMAND } = require('../../lib/constants');
+const { ESPHOME } = require('../../lib/constants');
 const { roundToDecimals, isValveOrCover, SENSOR_TYPES, extractSensorSlot, detectMeasurementType, computeCapabilityId } = require('../../lib/utils');
 
 // Localized base titles per measurement type for slot labeling
@@ -13,6 +13,63 @@ const SLOT_TITLES = {
   voc:         { en: 'VOC Index',   nl: 'VOC Index',   fr: 'Indice COV' },
   nox:         { en: 'NOx Index',   nl: 'NOx Index',   fr: 'Indice NOx' },
 };
+
+/**
+ * Normalize the logical state reported by ESPHome's binary sensor.
+ * Hardware polarity is configured in ESPHome (Hall sensor: inverted true;
+ * pre-v1.4 switch: inverted false), so the Homey app must not invert it.
+ */
+function parseBinaryState(state) {
+  if (state?.missingState) return null;
+
+  const rawState = typeof state === 'boolean' ? state : state?.state;
+  if (typeof rawState === 'boolean') return rawState;
+  if (rawState === 'true') return true;
+  if (rawState === 'false') return false;
+  return null;
+}
+
+/**
+ * Normalize a valve position to the ESPHome 0..1 range.
+ * Older adapters may expose a percentage, so accept 0..100 as well.
+ */
+function parseValvePosition(state) {
+  const rawPosition = state?.position;
+  const position = typeof rawPosition === 'number' ? rawPosition : Number(rawPosition);
+  if (!Number.isFinite(position)) return null;
+
+  if (position >= 0 && position <= 1) return position;
+  if (position >= 0 && position <= 100) return position / 100;
+  return null;
+}
+
+/**
+ * Normalize ESPHome's valve operation enum/name across adapters.
+ * ESPHome uses 0=IDLE, 1=OPENING, 2=CLOSING.
+ */
+function parseValveOperation(state) {
+  const rawOperation = state?.currentOperation ?? state?.current_operation;
+  if (rawOperation === undefined || rawOperation === null) return null;
+
+  if (typeof rawOperation === 'number') {
+    if (rawOperation === 0) return 'idle';
+    if (rawOperation === 1) return 'opening';
+    if (rawOperation === 2) return 'closing';
+    return null;
+  }
+
+  const operation = String(rawOperation).toLowerCase().replace(/[^a-z]/g, '');
+  if (operation === 'idle') return 'idle';
+  if (operation === 'opening' || operation === 'open') return 'opening';
+  if (operation === 'closing' || operation === 'closed' || operation === 'close') return 'closing';
+  return null;
+}
+
+function valveEndpointFromPosition(position) {
+  if (position <= 0.01) return false;
+  if (position >= 0.99) return true;
+  return null;
+}
 
 class OpenAirValveDevice extends Homey.Device {
 
@@ -29,6 +86,12 @@ class OpenAirValveDevice extends Homey.Device {
     };
     this._destroyed = false;
     this._slotTitleFlags = {};
+    this._valvePosition = null;
+    this._valveOperation = null;
+    this._closedSensorState = null;
+
+    // Migrate devices paired before the binary valve capability was used.
+    await this._migrateValveDevice();
 
     // Initialize ESPHome client
     await this._initializeClient();
@@ -65,9 +128,14 @@ class OpenAirValveDevice extends Homey.Device {
       this.log('Connected to Open AIR Valve');
       this.setAvailable();
 
-      for (const entity of this.client.getEntities()) {
+      const entities = this.client.getEntities();
+      for (const entity of entities) {
         await this._mapEntity(entity);
       }
+
+      // Adapters retain the latest ESPHome state while connecting. Replay it
+      // only after capabilities and entity mappings are ready.
+      await this._replayInitialStates(entities);
     });
 
     this.client.on('disconnected', () => {
@@ -104,6 +172,66 @@ class OpenAirValveDevice extends Homey.Device {
   }
 
   /**
+   * Migrate older valve devices away from window-covering/percentage cards.
+   * The standard `onoff` capability gives the tile Homey's normal power
+   * quick-action icon while the separate read-only capability shows the
+   * resolved Open/Closed status.
+   */
+  async _migrateValveDevice() {
+    const obsoleteCapabilities = [
+      'valve_open',
+      'windowcoverings_set',
+      'windowcoverings_state',
+      'valve_position',
+      'measure_valve_position',
+    ];
+
+    try {
+      if (!this.hasCapability('onoff')) {
+        await this.addCapability('onoff');
+        this.log('Migrated: added onoff capability');
+      }
+      if (!this.hasCapability('measure_valve_closed')) {
+        await this.addCapability('measure_valve_closed');
+        this.log('Migrated: added measure_valve_closed capability');
+      }
+
+      for (const capabilityId of obsoleteCapabilities) {
+        if (this.hasCapability(capabilityId)) {
+          await this.removeCapability(capabilityId);
+          this.log(`Migrated: removed ${capabilityId} capability`);
+        }
+      }
+    } catch (error) {
+      this.error('Failed to migrate valve capabilities:', error);
+    }
+
+    // Changing the manifest class affects newly paired devices; update
+    // existing devices as well when the SDK exposes the runtime API.
+    try {
+      if (typeof this.setClass === 'function') {
+        const currentClass = typeof this.getClass === 'function' ? this.getClass() : null;
+        if (currentClass !== 'other') {
+          await this.setClass('other');
+          this.log('Migrated: changed valve device class to other');
+        }
+      }
+    } catch (error) {
+      this.error('Failed to migrate valve device class:', error);
+    }
+  }
+
+  /**
+   * Replay states captured during the connection handshake.
+   */
+  async _replayInitialStates(entities) {
+    for (const entity of entities) {
+      if (!entity || entity.state === null || entity.state === undefined) continue;
+      await this._handleStateChange(entity.type, entity, entity.state);
+    }
+  }
+
+  /**
    * Throw if the valve entity has not been discovered yet.
    */
   _requireValveEntity() {
@@ -119,6 +247,7 @@ class OpenAirValveDevice extends Homey.Device {
     const name = entity.name || '';
     const type = entity.type?.toLowerCase() || '';
     const key = entity.key;
+    const objectId = String(entity.objectId || entity.config?.objectId || '').toLowerCase();
 
     this.log(`Mapping entity: ${name} (type: ${entity.type}, key: ${key})`);
 
@@ -130,7 +259,11 @@ class OpenAirValveDevice extends Homey.Device {
     }
 
     // Map closed switch binary sensor
-    if (type === 'binary_sensor' && name.toLowerCase().includes('closed')) {
+    if (type === 'binary_sensor' && (
+      name.toLowerCase().includes('closed')
+      || objectId.includes('valve_homing_switch')
+      || objectId.includes('valve_closed')
+    )) {
       this.entityKeys.closedSensor = key;
       this.log(`Mapped closed sensor: ${name} (key: ${key})`);
       return;
@@ -164,6 +297,12 @@ class OpenAirValveDevice extends Homey.Device {
       if (!this.hasCapability(capabilityId)) {
         await this.addCapability(capabilityId);
         this.log(`Dynamically added ${capabilityId} capability`);
+      }
+
+      if (!sensorType.settingKey) {
+        await this.setCapabilityOptions(capabilityId, {
+          decimals: sensorType.defaultDecimals,
+        });
       }
 
       if (slot != null && slot >= 2) {
@@ -241,29 +380,27 @@ class OpenAirValveDevice extends Homey.Device {
     this.log(`State change for key ${key} (${type}):`, state);
 
     try {
-      // Valve state (also accept cover entities)
+      // The valve entity publishes endpoint position and movement completion.
       if (key === this.entityKeys.valve && isValveOrCover(type)) {
-        // Position: 0 (closed) to 1 (open)
-        if (typeof state.position === 'number') {
-          await this.setCapabilityValue('windowcoverings_set', state.position);
-          if (this.hasCapability('measure_valve_position')) {
-            await this.setCapabilityValue('measure_valve_position', roundToDecimals(state.position * 100, 0));
-          }
-        }
-        // Current operation: 0=IDLE, 1=IS_OPENING, 2=IS_CLOSING
-        if (typeof state.currentOperation === 'number') {
-          let windowState = 'idle';
-          if (state.currentOperation === 1) windowState = 'up';
-          else if (state.currentOperation === 2) windowState = 'down';
-          await this.setCapabilityValue('windowcoverings_state', windowState);
-        }
+        await this._handleValveState(state);
         return;
       }
 
-      // Closed switch binary sensor
+      // ESPHome publishes the already-normalized logical state of the Hall
+      // sensor / homing switch. True confirms the physical closed endpoint;
+      // false only means that the switch is not currently active.
       if (key === this.entityKeys.closedSensor && type === 'binary_sensor') {
-        if (typeof state.state === 'boolean' && this.hasCapability('measure_valve_closed')) {
-          await this.setCapabilityValue('measure_valve_closed', state.state);
+        const closed = parseBinaryState(state);
+        if (closed === null) return;
+
+        this._closedSensorState = closed;
+        if (closed) {
+          await this._setResolvedValveState(false, 'closed switch');
+        } else {
+          const endpoint = valveEndpointFromPosition(this._valvePosition);
+          if (this._valveOperation === 'idle' && endpoint === true) {
+            await this._setResolvedValveState(true, 'valve open endpoint');
+          }
         }
         return;
       }
@@ -273,7 +410,11 @@ class OpenAirValveDevice extends Homey.Device {
         const mapping = this.entityKeys.sensorMap[key];
         if (!mapping) return;
         if (typeof state.state === 'number' && !state.missingState) {
-          const decimals = parseInt(this.getSetting(mapping.settingKey) ?? String(mapping.defaultDecimals), 10);
+          const configuredDecimals = mapping.settingKey ? this.getSetting(mapping.settingKey) : null;
+          const parsedDecimals = Number.parseInt(configuredDecimals, 10);
+          const decimals = mapping.settingKey && Number.isInteger(parsedDecimals)
+            ? parsedDecimals
+            : mapping.defaultDecimals;
           await this.setCapabilityValue(mapping.capabilityId, roundToDecimals(state.state, decimals));
         }
       }
@@ -283,60 +424,73 @@ class OpenAirValveDevice extends Homey.Device {
   }
 
   /**
+   * Resolve the binary valve state from ESPHome's valve telemetry.
+   * Position is a target/endpoint value; IDLE confirms that the stepper has
+   * completed the move. Intermediate positions are intentionally ignored.
+   */
+  async _handleValveState(state) {
+    const position = parseValvePosition(state);
+    if (position === null) return;
+
+    const operation = parseValveOperation(state);
+    const endpoint = valveEndpointFromPosition(position);
+    this._valvePosition = position;
+    this._valveOperation = operation;
+
+    this.log('Valve telemetry:', {
+      position,
+      operation: operation || 'unknown',
+      endpoint: endpoint === null ? 'intermediate' : (endpoint ? 'open' : 'closed'),
+    });
+
+    if (endpoint === null) return;
+
+    // When operation is present, only IDLE is a completed endpoint. If an
+    // older adapter omits currentOperation, the endpoint position is the
+    // best available state and is accepted immediately.
+    if (operation && operation !== 'idle') return;
+
+    await this._setResolvedValveState(endpoint, 'valve telemetry');
+  }
+
+  /**
+   * Update both the standard tile control and the read-only status capability.
+   */
+  async _setResolvedValveState(isOpen, source) {
+    this.log(`Resolved valve state: ${isOpen ? 'Open' : 'Closed'} (${source})`);
+
+    if (this.hasCapability('onoff') && this.getCapabilityValue('onoff') !== isOpen) {
+      await this.setCapabilityValue('onoff', isOpen);
+    }
+
+    const isClosed = !isOpen;
+    if (
+      this.hasCapability('measure_valve_closed')
+      && this.getCapabilityValue('measure_valve_closed') !== isClosed
+    ) {
+      await this.setCapabilityValue('measure_valve_closed', isClosed);
+    }
+  }
+
+  /**
    * Register capability listeners for user interactions
    */
   _registerCapabilityListeners() {
-    this._positionDebounceTimer = null;
-
-    // Valve position slider (windowcoverings_set) with debouncing
-    this.registerCapabilityListener('windowcoverings_set', async (value) => {
-      if (this._positionDebounceTimer) {
-        clearTimeout(this._positionDebounceTimer);
+    // Binary control only: true = open, false = closed.
+    this.registerCapabilityListener('onoff', async (isOpen) => {
+      if (typeof isOpen !== 'boolean') {
+        throw new Error('Valve state must be boolean');
       }
-
-      return new Promise((resolve, reject) => {
-        this._positionDebounceTimer = setTimeout(async () => {
-          try {
-            this.log(`Setting valve position to: ${value}`);
-            this._requireValveEntity();
-            await this.client.setValvePosition(this.entityKeys.valve, value);
-            resolve();
-          } catch (error) {
-            reject(error);
-          }
-        }, COMMAND.DEBOUNCE_MS);
-      });
-    });
-
-    // Valve control ternary buttons (windowcoverings_state)
-    this.registerCapabilityListener('windowcoverings_state', async (value) => {
-      this.log(`Valve control action: ${value}`);
+      if (!this.client || !this.client.connected) {
+        throw new Error(this.homey.__('errors.not_connected'));
+      }
       this._requireValveEntity();
-
-      if (value === 'up') {
-        await this.client.setValvePosition(this.entityKeys.valve, 1.0);
-      } else if (value === 'down') {
-        await this.client.setValvePosition(this.entityKeys.valve, 0.0);
-      } else if (value === 'idle') {
-        await this.client.stopValve(this.entityKeys.valve);
-      }
+      this.log(`${isOpen ? 'Opening' : 'Closing'} valve`);
+      await this.client.setValvePosition(this.entityKeys.valve, isOpen ? 1.0 : 0.0);
     });
   }
 
   // --- Flow action methods ---
-
-  /**
-   * Set valve position using a 0-100% scale.
-   */
-  async setValvePositionPercent(percent) {
-    if (!this.client || !this.client.connected) {
-      throw new Error(this.homey.__('errors.not_connected'));
-    }
-    this._requireValveEntity();
-    const position = percent / 100;
-    this.log(`setValvePositionPercent: ${percent}% → position ${position}`);
-    await this.client.setValvePosition(this.entityKeys.valve, position);
-  }
 
   /**
    * Open valve fully.
@@ -360,18 +514,6 @@ class OpenAirValveDevice extends Homey.Device {
     this._requireValveEntity();
     this.log('Closing valve fully');
     await this.client.setValvePosition(this.entityKeys.valve, 0.0);
-  }
-
-  /**
-   * Stop valve movement.
-   */
-  async stopValve() {
-    if (!this.client || !this.client.connected) {
-      throw new Error(this.homey.__('errors.not_connected'));
-    }
-    this._requireValveEntity();
-    this.log('Stopping valve');
-    await this.client.stopValve(this.entityKeys.valve);
   }
 
   /**
@@ -420,6 +562,9 @@ class OpenAirValveDevice extends Homey.Device {
       sensorMap: {},
     };
     this._slotTitleFlags = {};
+    this._valvePosition = null;
+    this._valveOperation = null;
+    this._closedSensorState = null;
 
     await this._initializeClient();
   }
@@ -452,11 +597,6 @@ class OpenAirValveDevice extends Homey.Device {
     this.log('Device deleted, cleaning up...');
     this._destroyed = true;
 
-    if (this._positionDebounceTimer) {
-      clearTimeout(this._positionDebounceTimer);
-      this._positionDebounceTimer = null;
-    }
-
     if (this.client) {
       this.client.disconnect();
       this.client = null;
@@ -466,11 +606,6 @@ class OpenAirValveDevice extends Homey.Device {
   async onUninit() {
     this.log('Device uninit, cleaning up...');
     this._destroyed = true;
-
-    if (this._positionDebounceTimer) {
-      clearTimeout(this._positionDebounceTimer);
-      this._positionDebounceTimer = null;
-    }
 
     if (this.client) {
       this.client.disconnect();

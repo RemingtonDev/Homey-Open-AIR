@@ -31,5 +31,23 @@
   },
   "1.2.4": {
     "en": "Separated Mini and Valve discovery so each device is shown with its correct driver icon."
+  },
+  "1.3.0": {
+    "en": "Improved Valve devices with Homey's standard valve position control, removed duplicate window-covering controls, fixed initial and legacy valve state synchronization, and display CO₂ as whole ppm values."
+  },
+  "1.3.1": {
+    "en": "Valve control is now binary Open/Closed with live homing-sensor status. Percentage and stop controls were removed.",
+    "nl": "Klepbediening is nu binair Open/Gesloten met live status van de homingsensor. Percentage- en stopbediening zijn verwijderd.",
+    "fr": "La commande de la vanne est désormais binaire Ouverte/Fermée avec l’état en direct du capteur de position. Les commandes de pourcentage et d’arrêt ont été supprimées."
+  },
+  "1.3.2": {
+    "en": "Aligned the published app documentation with the binary Open/Closed valve controls.",
+    "nl": "De gepubliceerde appdocumentatie afgestemd op de binaire Open/Gesloten klepbediening.",
+    "fr": "Documentation publiée alignée sur la commande binaire Ouverte/Fermée de la vanne."
+  },
+  "1.4.0": {
+    "en": "Valve tiles now use Homey's standard on/off control, and valve state updates are synchronized from ESPHome position and movement telemetry.",
+    "nl": "Kleppen gebruiken nu Homey's standaard aan/uit-bediening en de klepstatus wordt gesynchroniseerd via ESPHome-positie- en bewegingsgegevens.",
+    "fr": "Les tuiles de vanne utilisent désormais la commande standard marche/arrêt de Homey et l’état est synchronisé avec les données de position et de mouvement d’ESPHome."
   }
 }
