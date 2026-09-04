@@ -99,9 +99,14 @@ class OpenAirMiniDevice extends Homey.Device {
       this.setAvailable();
 
       // Map entities that were discovered during connect() (before event listeners were wired)
-      for (const entity of this.client.getEntities()) {
+      const entities = this.client.getEntities();
+      for (const entity of entities) {
         await this._mapEntity(entity);
       }
+
+      // Adapters retain the latest ESPHome state while connecting. Replay it
+      // only after capabilities and entity mappings are ready.
+      await this._replayInitialStates(entities);
 
       // Fix corrupted dim value if outside 0-1 range (from previous buggy code)
       await this._fixCorruptedDimValue();
@@ -147,6 +152,16 @@ class OpenAirMiniDevice extends Homey.Device {
     } catch (error) {
       this.error('Failed to connect:', error);
       this.setUnavailable(this.homey.__('errors.connection_failed') || 'Connection failed');
+    }
+  }
+
+  /**
+   * Replay states captured during the connection handshake.
+   */
+  async _replayInitialStates(entities) {
+    for (const entity of entities) {
+      if (!entity || entity.state === null || entity.state === undefined) continue;
+      await this._handleStateChange(entity.type, entity, entity.state);
     }
   }
 
@@ -216,6 +231,12 @@ class OpenAirMiniDevice extends Homey.Device {
       if (!this.hasCapability(capabilityId)) {
         await this.addCapability(capabilityId);
         this.log(`Dynamically added ${capabilityId} capability`);
+      }
+
+      if (!sensorType.settingKey) {
+        await this.setCapabilityOptions(capabilityId, {
+          decimals: sensorType.defaultDecimals,
+        });
       }
 
       // Set slot title for slot 2+ sensors
@@ -346,7 +367,11 @@ class OpenAirMiniDevice extends Homey.Device {
           || mapping.capabilityId.startsWith(`${SENSOR_TYPES.humidity.base}.`);
 
         if (isValidReading) {
-          const decimals = parseInt(this.getSetting(mapping.settingKey) ?? String(mapping.defaultDecimals), 10);
+          const configuredDecimals = mapping.settingKey ? this.getSetting(mapping.settingKey) : null;
+          const parsedDecimals = Number.parseInt(configuredDecimals, 10);
+          const decimals = mapping.settingKey && Number.isInteger(parsedDecimals)
+            ? parsedDecimals
+            : mapping.defaultDecimals;
           await this.setCapabilityValue(mapping.capabilityId, roundToDecimals(state.state, decimals));
           if (isHumidity) {
             this._invalidHumidityCapabilities.delete(mapping.capabilityId);

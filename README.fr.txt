@@ -42,11 +42,10 @@ Fonctionnalités — Mini (ventilation) :
 
 Fonctionnalités — Valve (registre de zone) :
 - Ouvrir / fermer la vanne
-- Régler la position de la vanne (0-100%)
-- Surveiller la position et l'état de fermeture de la vanne
-- Arrêter le mouvement de la vanne
+- Commande binaire Ouverte / Fermée uniquement
+- Surveiller en direct l'état Ouverte / Fermée du capteur de position initiale
 - Recalibrer la vanne (re-home)
-- Actions de flux : ouvrir, fermer, arrêter, régler la position, recalibrer
+- Actions de flux : ouvrir, fermer, recalibrer
 
 Installation :
 1. Ajoutez votre appareil Open AIR (Mini ou Valve) dans Homey

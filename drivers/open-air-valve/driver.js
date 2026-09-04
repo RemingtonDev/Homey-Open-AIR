@@ -191,17 +191,11 @@ class OpenAirValveDriver extends Homey.Driver {
         throw new Error(this.homey.__('pair.credentials.error_host_required'));
       }
 
-      // Build capabilities from discovered entities
-      const capabilities = ['windowcoverings_set', 'windowcoverings_state'];
+      // The hardware is binary: use Homey's standard onoff toggle for the
+      // familiar power icon and keep a separate read-only status tile. Do not
+      // expose valve_position, which renders an inaccurate percentage slider.
+      const capabilities = ['onoff', 'measure_valve_closed'];
       for (const entity of discoveredEntities) {
-        // Valve/cover entity → add valve position capability
-        if (isValveOrCover(entity.type) && !capabilities.includes('measure_valve_position')) {
-          capabilities.push('measure_valve_position');
-        }
-        // Binary sensor with "closed" in name → add valve closed capability
-        if (entity.type === 'binary_sensor' && entity.name.toLowerCase().includes('closed') && !capabilities.includes('measure_valve_closed')) {
-          capabilities.push('measure_valve_closed');
-        }
         // Sensor entities → detect type (skip rpm for valve driver)
         if (entity.type === 'sensor') {
           const type = detectMeasurementType(entity.name);

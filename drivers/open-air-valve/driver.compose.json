@@ -4,34 +4,28 @@
     "nl": "Open AIR Klep",
     "fr": "Open AIR Vanne"
   },
-  "class": "blinds",
+  "class": "other",
   "capabilities": [
-    "windowcoverings_set",
-    "windowcoverings_state"
+    "onoff",
+    "measure_valve_closed"
   ],
   "capabilitiesOptions": {
-    "windowcoverings_set": {
+    "onoff": {
       "title": {
-        "en": "Valve Capacity",
-        "nl": "Klepcapaciteit",
-        "fr": "Capacité de la vanne"
+        "en": "Valve",
+        "nl": "Klep",
+        "fr": "Vanne"
       },
-      "min": 0,
-      "max": 1,
-      "step": 0.01
-    },
-    "windowcoverings_state": {
-      "title": {
-        "en": "Valve Control",
-        "nl": "Klepbediening",
-        "fr": "Contrôle de la vanne"
-      }
+      "quickAction": true
     },
     "measure_temperature": {
       "decimals": 1
     },
     "measure_humidity": {
       "decimals": 1
+    },
+    "measure_co2": {
+      "decimals": 0
     }
   },
   "platforms": ["local"],
@@ -82,17 +76,6 @@
           "type": "dropdown",
           "label": { "en": "Humidity Decimals", "nl": "Vochtigheid decimalen", "fr": "Décimales humidité" },
           "value": "1",
-          "values": [
-            { "id": "0", "label": { "en": "0", "nl": "0", "fr": "0" } },
-            { "id": "1", "label": { "en": "1", "nl": "1", "fr": "1" } },
-            { "id": "2", "label": { "en": "2", "nl": "2", "fr": "2" } }
-          ]
-        },
-        {
-          "id": "co2_decimals",
-          "type": "dropdown",
-          "label": { "en": "CO2 Decimals", "nl": "CO2 decimalen", "fr": "Décimales CO2" },
-          "value": "0",
           "values": [
             { "id": "0", "label": { "en": "0", "nl": "0", "fr": "0" } },
             { "id": "1", "label": { "en": "1", "nl": "1", "fr": "1" } },

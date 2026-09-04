@@ -1,9 +1,29 @@
 {
   "type": "boolean",
   "title": {
-    "en": "Valve Closed",
+    "en": "Valve Status",
+    "nl": "Klepstatus",
+    "fr": "État de la vanne"
+  },
+  "titleTrue": {
+    "en": "Closed",
+    "nl": "Gesloten",
+    "fr": "Fermée"
+  },
+  "titleFalse": {
+    "en": "Open",
+    "nl": "Open",
+    "fr": "Ouverte"
+  },
+  "insightsTitleTrue": {
+    "en": "Valve closed",
     "nl": "Klep gesloten",
-    "fr": "Vanne fermee"
+    "fr": "Vanne fermée"
+  },
+  "insightsTitleFalse": {
+    "en": "Valve opened",
+    "nl": "Klep geopend",
+    "fr": "Vanne ouverte"
   },
   "getable": true,
   "setable": false,

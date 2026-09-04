@@ -84,12 +84,6 @@ class OpenAirApp extends Homey.App {
     });
 
     // --- Valve flow actions ---
-    const setValvePositionAction = this.homey.flow.getActionCard('set-valve-position');
-    setValvePositionAction.registerRunListener(async (args) => {
-      this.log(`Flow: Set valve position to ${args.position}%`);
-      await args.device.setValvePositionPercent(args.position);
-    });
-
     const openValveAction = this.homey.flow.getActionCard('open-valve');
     openValveAction.registerRunListener(async (args) => {
       this.log('Flow: Open valve fully');
@@ -100,12 +94,6 @@ class OpenAirApp extends Homey.App {
     closeValveAction.registerRunListener(async (args) => {
       this.log('Flow: Close valve');
       await args.device.closeValve();
-    });
-
-    const stopValveAction = this.homey.flow.getActionCard('stop-valve');
-    stopValveAction.registerRunListener(async (args) => {
-      this.log('Flow: Stop valve movement');
-      await args.device.stopValve();
     });
 
     const rehomeValveAction = this.homey.flow.getActionCard('rehome-valve');
