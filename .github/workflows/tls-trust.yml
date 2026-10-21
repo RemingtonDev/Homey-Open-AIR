@@ -1,0 +1,35 @@
+name: TLS trust check
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  tls:
+    runs-on: ubuntu-latest
+    env:
+      NODE_OPTIONS: --use-openssl-ca
+      SSL_CERT_FILE: /etc/ssl/certs/ca-certificates.crt
+      SSL_CERT_DIR: /nonexistent
+    steps:
+      - name: Select corrected CA trust
+        run: |
+          curl --fail --silent --show-error --location https://files.pythonhosted.org/packages/py3/c/certifi/certifi-2026.10.19-py3-none-any.whl -o "$RUNNER_TEMP/certifi.whl"
+          echo "42d35340cc5b9ba78e818ddbff0c5b1c2b779de448a340fd1b989f5fa8670e1b  $RUNNER_TEMP/certifi.whl" | sha256sum --check
+          unzip -p "$RUNNER_TEMP/certifi.whl" certifi/cacert.pem > "$RUNNER_TEMP/corrected-ca.pem"
+          echo "SSL_CERT_FILE=$RUNNER_TEMP/corrected-ca.pem" >> "$GITHUB_ENV"
+          echo 'SSL_CERT_DIR=/nonexistent' >> "$GITHUB_ENV"
+          echo 'NODE_OPTIONS=--use-openssl-ca' >> "$GITHUB_ENV"
+
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+
+      - name: Verify actual HTTPS trust
+        run: node scripts/check-tls.mjs
