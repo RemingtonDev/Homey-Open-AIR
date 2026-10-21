@@ -65,3 +65,7 @@ Requirements:
 - Device must be on the same network as your Homey
 
 For more information about Open AIR, visit: https://github.com/RemingtonDev/Homey-Open-AIR
+
+## CI TLS trust
+
+Validation uses supported Node 24 with exclusive OpenSSL trust and the hash-verified certifi 2026.10.19 bundle while the incident-fixed Node releases are pending. The manual **TLS trust check** workflow exercises normal HTTPS and both incident chains without publishing or installing a Homey app. This CI configuration does not change the Homey-managed app runtime.
