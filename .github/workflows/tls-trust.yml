@@ -33,4 +33,3 @@ jobs:
 
       - name: Verify actual HTTPS trust
         run: node scripts/check-tls.mjs
-
