@@ -49,5 +49,10 @@
     "en": "Valve tiles now use Homey's standard on/off control, and valve state updates are synchronized from ESPHome position and movement telemetry.",
     "nl": "Kleppen gebruiken nu Homey's standaard aan/uit-bediening en de klepstatus wordt gesynchroniseerd via ESPHome-positie- en bewegingsgegevens.",
     "fr": "Les tuiles de vanne utilisent désormais la commande standard marche/arrêt de Homey et l’état est synchronisé avec les données de position et de mouvement d’ESPHome."
+  },
+  "1.4.1": {
+    "en": "Valve availability now requires discovered controls and fresh position feedback. Incomplete discovery recovers automatically with bounded retries, and reconnects discard stale state.",
+    "nl": "Kleppen zijn pas beschikbaar na detectie van de bediening en actuele positieterugmelding. Onvolledige detectie wordt met begrensde pogingen hersteld; herverbindingen verwijderen verouderde status.",
+    "fr": "Les vannes ne sont disponibles qu’après découverte des commandes et réception de leur position. La découverte incomplète est relancée avec un nombre limité de tentatives ; les reconnexions écartent les anciens états."
   }
 }

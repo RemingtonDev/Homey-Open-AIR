@@ -110,7 +110,7 @@ function testManifestsUseBinaryValveControl() {
   assert.equal(valveClosed.titleTrue.en, 'Closed');
   assert.equal(valveClosed.titleFalse.en, 'Open');
   assert.equal(app.compatibility, '>=12.2.0');
-  assert.equal(app.version, '1.4.0');
+  assert.equal(app.version, '1.4.1');
 
   for (const driver of [valveDriver, miniDriver]) {
     const settings = driver.settings.flatMap(group => group.children || []);
@@ -341,6 +341,7 @@ async function testBinaryValveCommandsUseOnlyEndpoints() {
   const calls = [];
 
   fixture.device.entityKeys.valve = 12;
+  fixture.device._valveReady = true;
   fixture.device.client = {
     connected: true,
     setValvePosition: async (key, position) => calls.push({ key, position }),

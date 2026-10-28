@@ -1,6 +1,6 @@
 {
   "id": "com.remingtondev.open-air-mini",
-  "version": "1.4.0",
+  "version": "1.4.1",
   "compatibility": ">=12.2.0",
   "sdk": 3,
   "platforms": [
