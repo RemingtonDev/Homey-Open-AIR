@@ -115,60 +115,112 @@ class OpenAirValveDevice extends Homey.Device {
       return;
     }
 
-    this.client = new EspHomeClient({
-      host,
-      port,
+    this._clearDiscoveryTimer();
+    this._valveReady = false;
+    this._resetValveMappings();
+    const client = new EspHomeClient({
+      host, port,
       encryptionKey: store.encryptionKey || null,
       password: store.password || null,
       diagnosticsLabel: 'open-air-valve-runtime',
       logger: this,
     });
+    this.client = client;
+    const current = () => !this._destroyed && this.client === client;
+    let epoch = 0;
+    const enqueue = (work) => {
+      const eventEpoch = epoch;
+      this._entityQueue = (this._entityQueue || Promise.resolve()).then(async () => {
+        if (!current() || eventEpoch !== epoch) return;
+        await work();
+        if (current() && eventEpoch === epoch) await this._updateValveReadiness();
+      }).catch(error => this.error('Valve discovery/state processing failed:', error));
+    };
+    await this.setUnavailable('Discovering valve control and position');
 
-    this.client.on('connected', async () => {
-      this.log('Connected to Open AIR Valve');
-      this.setAvailable();
-
-      const entities = this.client.getEntities();
-      for (const entity of entities) {
-        await this._mapEntity(entity);
-      }
-
-      // Adapters retain the latest ESPHome state while connecting. Replay it
-      // only after capabilities and entity mappings are ready.
-      await this._replayInitialStates(entities);
+    client.on('connected', () => {
+      if (!current()) return;
+      epoch++;
+      this._valveReady = false;
+      this.setUnavailable('Discovering valve control and position').catch(this.error.bind(this));
+      enqueue(async () => {
+        this._resetValveMappings();
+        const entities = client.getEntities();
+        for (const entity of entities) await this._mapEntity(entity);
+        await this._replayInitialStates(entities);
+      });
+      this._scheduleDiscoveryRecovery(client);
     });
-
-    this.client.on('disconnected', () => {
-      this.log('Disconnected from Open AIR Valve');
-      if (!this._destroyed) {
-        this.setUnavailable(this.homey.__('errors.disconnected') || 'Device disconnected');
-      }
+    client.on('disconnected', () => {
+      if (!current()) return;
+      epoch++;
+      this._valveReady = false;
+      this._clearDiscoveryTimer();
+      this.setUnavailable(this.homey.__('errors.disconnected') || 'Device disconnected')
+        .catch(this.error.bind(this));
     });
-
-    this.client.on('error', (error) => {
-      this.error('ESPHome client error:', error);
+    client.on('error', error => {
+      if (current()) this.error('ESPHome client error:', error);
     });
-
-    this.client.on('reconnectFailed', () => {
-      if (!this._destroyed) {
-        this.setUnavailable(this.homey.__('errors.reconnect_failed') || 'Failed to reconnect');
-      }
+    client.on('reconnectFailed', () => {
+      if (current()) this.setUnavailable(this.homey.__('errors.reconnect_failed'))
+        .catch(this.error.bind(this));
     });
-
-    this.client.on('entityDiscovered', async (entity) => {
+    client.on('entityDiscovered', entity => enqueue(async () => {
       await this._mapEntity(entity);
-    });
-
-    this.client.on('stateChanged', ({ type, entity, state }) => {
-      this._handleStateChange(type, entity, state);
-    });
-
+      await this._replayInitialStates([entity]);
+    }));
+    client.on('stateChanged', ({ type, entity, state }) =>
+      enqueue(() => this._handleStateChange(type, entity, state)));
     try {
-      await this.client.connect();
+      await client.connect();
     } catch (error) {
+      if (!current()) return;
       this.error('Failed to connect:', error);
-      this.setUnavailable(this.homey.__('errors.connection_failed') || 'Connection failed');
+      await this.setUnavailable(this.homey.__('errors.connection_failed') || 'Connection failed');
+      this._scheduleDiscoveryRecovery(client);
     }
+  }
+
+  _resetValveMappings() {
+    this.entityKeys = { valve: null, closedSensor: null, rehomeButton: null,
+      rebootSwitch: null, sensorMap: {} };
+    this._valvePosition = null;
+    this._valveOperation = null;
+    this._closedSensorState = null;
+    this._hasValveState = false;
+  }
+
+  _clearDiscoveryTimer() {
+    if (this._discoveryTimer) clearTimeout(this._discoveryTimer);
+    this._discoveryTimer = null;
+  }
+
+  async _updateValveReadiness() {
+    if (this._destroyed || !this.client?.connected
+      || this.entityKeys.valve === null || !this._hasValveState) return;
+    this._valveReady = true;
+    this._discoveryAttempts = 0;
+    this._clearDiscoveryTimer();
+    if (!this.getAvailable()) await this.setAvailable();
+  }
+
+  _scheduleDiscoveryRecovery(client) {
+    if (this._destroyed || this._valveReady || this._discoveryTimer) return;
+    const attempts = this._discoveryAttempts || 0;
+    if (attempts >= 3) {
+      this.setUnavailable('Valve discovery incomplete after 3 retries; reconnect or repair device')
+        .catch(this.error.bind(this));
+      return;
+    }
+    this._discoveryTimer = setTimeout(async () => {
+      this._discoveryTimer = null;
+      if (this._destroyed || this.client !== client || this._valveReady) return;
+      this._discoveryAttempts = attempts + 1;
+      this.log(`Retrying incomplete valve discovery (${this._discoveryAttempts}/3)`);
+      try { await this.reconnect({ recovery: true }); }
+      catch (error) { this.error('Valve discovery retry failed:', error); }
+    }, ESPHOME.CONNECTION_TIMEOUT_MS * (attempts + 1));
   }
 
   /**
@@ -235,7 +287,7 @@ class OpenAirValveDevice extends Homey.Device {
    * Throw if the valve entity has not been discovered yet.
    */
   _requireValveEntity() {
-    if (this.entityKeys.valve === null) {
+    if (!this._valveReady || this.entityKeys.valve === null) {
       throw new Error(this.homey.__('errors.no_valve_entity') || 'Valve entity not found');
     }
   }
@@ -371,12 +423,6 @@ class OpenAirValveDevice extends Homey.Device {
   async _handleStateChange(type, entity, state) {
     const key = entity?.key;
 
-    // Safety net: if we receive state data but device is marked unavailable, restore it
-    if (!this._destroyed && !this.getAvailable()) {
-      this.log('Received state while unavailable — restoring availability');
-      this.setAvailable();
-    }
-
     this.log(`State change for key ${key} (${type}):`, state);
 
     try {
@@ -470,6 +516,7 @@ class OpenAirValveDevice extends Homey.Device {
     ) {
       await this.setCapabilityValue('measure_valve_closed', isClosed);
     }
+    this._hasValveState = true;
   }
 
   /**
@@ -547,7 +594,10 @@ class OpenAirValveDevice extends Homey.Device {
   /**
    * Reconnect to the device (used after repair)
    */
-  async reconnect() {
+  async reconnect({ recovery = false } = {}) {
+    this._clearDiscoveryTimer();
+    this._valveReady = false;
+    if (!recovery) this._discoveryAttempts = 0;
     this.log('Reconnecting to device...');
 
     if (this.client) {
@@ -596,6 +646,8 @@ class OpenAirValveDevice extends Homey.Device {
   async onDeleted() {
     this.log('Device deleted, cleaning up...');
     this._destroyed = true;
+    this._valveReady = false;
+    this._clearDiscoveryTimer();
 
     if (this.client) {
       this.client.disconnect();
@@ -606,6 +658,8 @@ class OpenAirValveDevice extends Homey.Device {
   async onUninit() {
     this.log('Device uninit, cleaning up...');
     this._destroyed = true;
+    this._valveReady = false;
+    this._clearDiscoveryTimer();
 
     if (this.client) {
       this.client.disconnect();
