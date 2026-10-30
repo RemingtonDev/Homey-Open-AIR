@@ -110,7 +110,7 @@ function testManifestsUseBinaryValveControl() {
   assert.equal(valveClosed.titleTrue.en, 'Closed');
   assert.equal(valveClosed.titleFalse.en, 'Open');
   assert.equal(app.compatibility, '>=12.2.0');
-  assert.equal(app.version, '1.4.2');
+  assert.equal(app.version, '1.4.3');
 
   for (const driver of [valveDriver, miniDriver]) {
     const settings = driver.settings.flatMap(group => group.children || []);

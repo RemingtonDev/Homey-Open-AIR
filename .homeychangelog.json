@@ -59,5 +59,10 @@
     "en": "Valves that report Closed and Idle now come back online correctly, and a released closed switch now updates the valve status. Both reports use protocol default values that were previously lost.",
     "nl": "Kleppen die Gesloten en Inactief melden, komen nu correct weer online, en een vrijgekomen sluitschakelaar werkt nu de klepstatus bij. Beide meldingen gebruiken protocolstandaardwaarden die voorheen verloren gingen.",
     "fr": "Les vannes signalant Fermée et Inactive redeviennent correctement disponibles, et le relâchement du contact de fermeture met désormais à jour l’état de la vanne. Ces deux signalements utilisent des valeurs par défaut du protocole, auparavant perdues."
+  },
+  "1.4.3": {
+    "en": "A fan that reports off or speed 0 now updates correctly, and sensor readings of 0, such as a stopped fan's RPM, are no longer lost.",
+    "nl": "Een ventilator die uit of snelheid 0 meldt, wordt nu correct bijgewerkt, en sensorwaarden van 0, zoals het toerental van een stilstaande ventilator, gaan niet langer verloren.",
+    "fr": "Un ventilateur signalant l’arrêt ou la vitesse 0 est désormais correctement mis à jour, et les mesures à 0, comme le régime d’un ventilateur à l’arrêt, ne sont plus perdues."
   }
 }
