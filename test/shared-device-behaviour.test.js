@@ -85,12 +85,21 @@ for (const [label, Driver] of [['Mini', MiniDevice], ['Valve', ValveDevice]]) {
     assert.equal(reconnects, 1);
   });
 
-  test(`${label}: only the changed connection setting is stored`, async () => {
-    const { device, store } = createDevice(Driver);
-    device.reconnect = async () => {};
-    await device.onSettings({ newSettings: { host: 'a', port: 1 }, changedKeys: ['port'] });
-    assert.deepEqual(store, { port: 1 });
-  });
+  for (const [key, storeKey] of [
+    ['host', 'address'], ['port', 'port'], ['encryptionKey', 'encryptionKey'], ['password', 'password'],
+  ]) {
+    test(`${label}: changing only ${key} stores it and reconnects`, async () => {
+      const { device, store } = createDevice(Driver);
+      let reconnects = 0;
+      device.reconnect = async () => { reconnects++; };
+      await device.onSettings({
+        newSettings: { host: 'a', port: 1, encryptionKey: 'b', password: 'c', [key]: 'new' },
+        changedKeys: [key],
+      });
+      assert.deepEqual(store, { [storeKey]: 'new' });
+      assert.equal(reconnects, 1);
+    });
+  }
 
   test(`${label}: other settings neither store nor reconnect`, async () => {
     const { device, store } = createDevice(Driver);
