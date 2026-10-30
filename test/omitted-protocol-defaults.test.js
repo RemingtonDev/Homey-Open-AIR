@@ -364,6 +364,17 @@ for (const flow of FLOWS) {
     await release(fixture);
   });
 
+  test(`${flow}: omitted sensor zero reaches the tile`, async () => {
+    const fixture = await connect({
+      flow,
+      tile: { ...OPEN_TILE, measure_humidity: 55 },
+      packets: [[MESSAGE.SENSOR_STATE, Buffer.concat([fixed32(1, HUMIDITY_KEY)])]],
+    });
+    assert.equal(fixture.values.measure_humidity, 0);
+    assertNotReady(fixture, OPEN_TILE);
+    await release(fixture);
+  });
+
   test(`${flow}: sensor activity alone does not make the valve ready`, async () => {
     const fixture = await connect({
       flow,
