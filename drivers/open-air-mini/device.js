@@ -2,6 +2,7 @@
 
 const Homey = require('homey');
 const EspHomeClient = require('../../lib/EspHomeClient');
+const applySlotTitles = require('../../lib/slotTitles');
 const { ESPHOME, COMMAND, AUTO_CURVE } = require('../../lib/constants');
 const {
   createEntityKeys,
@@ -13,17 +14,8 @@ const {
   detectMeasurementType,
   computeCapabilityId,
   getHighestHumidityReading,
+  storeConnectionSettings,
 } = require('../../lib/utils');
-
-// Localized base titles per measurement type for slot labeling
-const SLOT_TITLES = {
-  temperature: { en: 'Temperature', nl: 'Temperatuur', fr: 'Température' },
-  humidity:    { en: 'Humidity',    nl: 'Vochtigheid', fr: 'Humidité' },
-  co2:         { en: 'CO2',         nl: 'CO2',         fr: 'CO2' },
-  rpm:         { en: 'RPM',         nl: 'Toerental',   fr: 'RPM' },
-  voc:         { en: 'VOC Index',   nl: 'VOC Index',   fr: 'Indice COV' },
-  nox:         { en: 'NOx Index',   nl: 'NOx Index',   fr: 'Indice NOx' },
-};
 
 class OpenAirMiniDevice extends Homey.Device {
 
@@ -241,9 +233,7 @@ class OpenAirMiniDevice extends Homey.Device {
 
       // Set slot title for slot 2+ sensors
       if (slot != null && slot >= 2) {
-        await this._setSlotTitle(capabilityId, measurementType, slot);
-        // Also relabel slot 1 base capability so users can distinguish
-        await this._ensureSlot1Title(measurementType);
+        await applySlotTitles(this, capabilityId, measurementType, slot);
       }
 
       // Store in sensorMap
@@ -279,51 +269,6 @@ class OpenAirMiniDevice extends Homey.Device {
         && (capabilityId === baseCapability || capabilityId.startsWith(`${baseCapability}.`))) {
         this._invalidHumidityCapabilities.add(capabilityId);
       }
-    }
-  }
-
-  /**
-   * Set the title for a slot-specific capability, e.g. "Temperature 2".
-   */
-  async _setSlotTitle(capabilityId, measurementType, slot) {
-    const titles = SLOT_TITLES[measurementType];
-    if (!titles) return;
-    try {
-      await this.setCapabilityOptions(capabilityId, {
-        title: {
-          en: `${titles.en} ${slot}`,
-          nl: `${titles.nl} ${slot}`,
-          fr: `${titles.fr} ${slot}`,
-        },
-      });
-    } catch (err) {
-      this.error(`Failed to set title for ${capabilityId}:`, err);
-    }
-  }
-
-  /**
-   * When a slot 2+ sensor is discovered, relabel the slot 1 base capability
-   * to include "1" so users can distinguish (e.g. "Temperature" → "Temperature 1").
-   * Guarded by _slotTitleFlags to avoid repeated calls.
-   */
-  async _ensureSlot1Title(measurementType) {
-    if (this._slotTitleFlags[measurementType]) return;
-    this._slotTitleFlags[measurementType] = true;
-
-    const baseCapabilityId = SENSOR_TYPES[measurementType].base;
-    const titles = SLOT_TITLES[measurementType];
-    if (!titles || !this.hasCapability(baseCapabilityId)) return;
-
-    try {
-      await this.setCapabilityOptions(baseCapabilityId, {
-        title: {
-          en: `${titles.en} 1`,
-          nl: `${titles.nl} 1`,
-          fr: `${titles.fr} 1`,
-        },
-      });
-    } catch (err) {
-      this.error(`Failed to set slot 1 title for ${baseCapabilityId}:`, err);
     }
   }
 
@@ -645,23 +590,7 @@ class OpenAirMiniDevice extends Homey.Device {
   async onSettings({ oldSettings, newSettings, changedKeys }) {
     this.log('Settings changed:', changedKeys);
 
-    const connectionKeys = ['host', 'port', 'encryptionKey', 'password'];
-    const connectionChanged = changedKeys.some(key => connectionKeys.includes(key));
-
-    if (connectionChanged) {
-      if (changedKeys.includes('host')) {
-        await this.setStoreValue('address', newSettings.host);
-      }
-      if (changedKeys.includes('port')) {
-        await this.setStoreValue('port', newSettings.port);
-      }
-      if (changedKeys.includes('encryptionKey')) {
-        await this.setStoreValue('encryptionKey', newSettings.encryptionKey || null);
-      }
-      if (changedKeys.includes('password')) {
-        await this.setStoreValue('password', newSettings.password || null);
-      }
-
+    if (await storeConnectionSettings(this, newSettings, changedKeys)) {
       await this.reconnect();
     }
 

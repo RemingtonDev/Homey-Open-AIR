@@ -47,7 +47,6 @@ function createDevice(DeviceClass, capabilities = [], values = {}) {
     valve: null,
     closedSensor: null,
     rehomeButton: null,
-    rebootSwitch: null,
     sensorMap: {},
   };
   device._slotTitleFlags = {};
