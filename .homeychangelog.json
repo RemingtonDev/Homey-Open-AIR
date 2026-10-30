@@ -54,5 +54,10 @@
     "en": "Valve availability now requires discovered controls and fresh position feedback. Incomplete discovery recovers automatically with bounded retries, and reconnects discard stale state.",
     "nl": "Kleppen zijn pas beschikbaar na detectie van de bediening en actuele positieterugmelding. Onvolledige detectie wordt met begrensde pogingen hersteld; herverbindingen verwijderen verouderde status.",
     "fr": "Les vannes ne sont disponibles qu’après découverte des commandes et réception de leur position. La découverte incomplète est relancée avec un nombre limité de tentatives ; les reconnexions écartent les anciens états."
+  },
+  "1.4.2": {
+    "en": "Valves that report Closed and Idle now come back online correctly, and a released closed switch now updates the valve status. Both reports use protocol default values that were previously lost.",
+    "nl": "Kleppen die Gesloten en Inactief melden, komen nu correct weer online, en een vrijgekomen sluitschakelaar werkt nu de klepstatus bij. Beide meldingen gebruiken protocolstandaardwaarden die voorheen verloren gingen.",
+    "fr": "Les vannes signalant Fermée et Inactive redeviennent correctement disponibles, et le relâchement du contact de fermeture met désormais à jour l’état de la vanne. Ces deux signalements utilisent des valeurs par défaut du protocole, auparavant perdues."
   }
 }
