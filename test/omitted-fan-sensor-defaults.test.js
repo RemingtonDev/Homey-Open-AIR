@@ -4,58 +4,16 @@
 // and Mini driver. Only the socket layer and Homey itself are stubbed.
 
 const assert = require('node:assert/strict');
-const Module = require('node:module');
-const net = require('node:net');
-
-// Hardware guard: installed before any app code loads, so a mistake in this
-// file fails the test instead of reaching a device.
-let socketConnects = 0;
-net.Socket.prototype.connect = function refuseConnect() {
-  socketConnects++;
-  throw new Error('Tests must not open network connections');
-};
-
-const originalLoad = Module._load;
-Module._load = function load(request) {
-  if (request === 'homey') return { Device: class {} };
-  return originalLoad.apply(this, arguments);
-};
-const MiniDevice = require('../drivers/open-air-mini/device');
-Module._load = originalLoad;
+const {
+  MESSAGE, assertNoHardwareTraffic, clients, fixed32, float, installClientStubs, listed,
+  loadDriver, optional, stubDevice, varint,
+} = require('./helpers');
+const MiniDevice = loadDriver('open-air-mini');
 const ModernAdapter = require('../lib/adapters/ModernAdapter');
 
 const FAN_KEY = 1;
 const RPM_KEY = 2;
 const HUMIDITY_KEY = 3;
-
-const MESSAGE = {
-  LIST_FAN: 14,
-  LIST_SENSOR: 16,
-  LIST_DONE: 19,
-  SUBSCRIBE_STATES: 20,
-  FAN_STATE: 23,
-  SENSOR_STATE: 25,
-};
-
-const tag = (field, wireType) => Buffer.from([(field << 3) | wireType]);
-const fixed32 = (field, value) => {
-  const body = Buffer.alloc(4);
-  body.writeUInt32LE(value);
-  return Buffer.concat([tag(field, 5), body]);
-};
-const float = (field, value) => {
-  const body = Buffer.alloc(4);
-  body.writeFloatLE(value);
-  return Buffer.concat([tag(field, 5), body]);
-};
-const varint = (field, value) => Buffer.concat([tag(field, 0), Buffer.from([value])]);
-const text = (field, value) => Buffer.concat([
-  tag(field, 2), Buffer.from([Buffer.byteLength(value)]), Buffer.from(value),
-]);
-
-// A field left undefined is omitted, as an ESPHome server does for proto3
-// zero/false values. An explicit 0 is written, which only tests do.
-const optional = (encode, field, value) => (value === undefined ? [] : [encode(field, value)]);
 
 const fanState = ({ state, speedLevel } = {}) => Buffer.concat([
   fixed32(1, FAN_KEY),
@@ -67,9 +25,6 @@ const sensorState = (key, { state, missingState } = {}) => Buffer.concat([
   ...optional(float, 2, state),
   ...optional(varint, 3, missingState),
 ]);
-const listed = (key, objectId, name, ...extra) => Buffer.concat([
-  text(1, objectId), fixed32(2, key), text(3, name), ...extra,
-]);
 
 const FULL_TILE = {
   onoff: true,
@@ -79,39 +34,15 @@ const FULL_TILE = {
   measure_humidity: 50,
 };
 
-const clients = [];
-const outbound = [];
-
-async function installClientStubs() {
-  const { EspHomeClient } = await import('esphome-client');
-  EspHomeClient.prototype.connect = function connect() {
-    clients.push(this);
-    setImmediate(() => this.emit('connect', false));
-  };
-  EspHomeClient.prototype.frameAndSend = function frameAndSend(type) {
-    outbound.push(type);
-  };
-}
-
 function createDevice() {
   const device = new MiniDevice();
   const values = { ...FULL_TILE };
-  Object.assign(device, {
-    _destroyed: false,
-    _slotTitleFlags: {},
+  stubDevice(device, values, {
     _invalidHumidityCapabilities: new Set(),
     entityKeys: { fan: null, fanSpeedLevels: 100, sensorMap: {} },
-    log() {},
-    error(...args) { throw new Error(args.join(' ')); },
-    homey: { __: key => key },
     getAvailable: () => true,
     setAvailable: async () => {},
     getSetting: () => null,
-    hasCapability: key => key in values,
-    addCapability: async key => { values[key] = null; },
-    getCapabilityValue: key => values[key],
-    setCapabilityValue: async (key, value) => { values[key] = value; },
-    setCapabilityOptions: async () => {},
   });
   return { device, values };
 }
@@ -234,12 +165,7 @@ async function main() {
     }
   }
 
-  assert.equal(socketConnects, 0, 'no test may open a socket');
-  assert.deepEqual(
-    [...new Set(outbound)].filter(type => type !== MESSAGE.SUBSCRIBE_STATES),
-    [],
-    'no test may send anything except the protocol state subscription',
-  );
+  assertNoHardwareTraffic();
 
   if (failures.length) {
     throw new Error(`${failures.length} of ${tests.length} fan and sensor default tests failed`);

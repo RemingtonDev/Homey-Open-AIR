@@ -4,65 +4,17 @@
 // wrapper and valve driver. Only the socket layer and Homey itself are stubbed.
 
 const assert = require('node:assert/strict');
-const Module = require('node:module');
-const net = require('node:net');
-
-// Hardware guard: installed before any app code loads, so a mistake in this
-// file fails the test instead of reaching a device.
-let socketConnects = 0;
-net.Socket.prototype.connect = function refuseConnect() {
-  socketConnects++;
-  throw new Error('Tests must not open network connections');
-};
-
-const originalLoad = Module._load;
-Module._load = function load(request) {
-  if (request === 'homey') return { Device: class {} };
-  return originalLoad.apply(this, arguments);
-};
-const ValveDevice = require('../drivers/open-air-valve/device');
-Module._load = originalLoad;
+const {
+  MESSAGE, assertNoHardwareTraffic, clients, fixed32, float, installClientStubs, listed,
+  loadDriver, optional, stubDevice, varint,
+} = require('./helpers');
+const ValveDevice = loadDriver('open-air-valve');
 const Wrapper = require('../lib/EspHomeClient');
 const { ESPHOME } = require('../lib/constants');
 
 const VALVE_KEY = 1;
 const CLOSED_SENSOR_KEY = 2;
 const HUMIDITY_KEY = 3;
-
-const MESSAGE = {
-  LIST_BINARY_SENSOR: 12,
-  LIST_COVER: 13,
-  LIST_SENSOR: 16,
-  LIST_DONE: 19,
-  SUBSCRIBE_STATES: 20,
-  BINARY_SENSOR_STATE: 21,
-  COVER_STATE: 22,
-  SENSOR_STATE: 25,
-  LIST_VALVE: 109,
-  VALVE_STATE: 110,
-};
-
-// --- Protobuf encoding -------------------------------------------------------
-
-const tag = (field, wireType) => Buffer.from([(field << 3) | wireType]);
-const fixed32 = (field, value) => {
-  const body = Buffer.alloc(4);
-  body.writeUInt32LE(value);
-  return Buffer.concat([tag(field, 5), body]);
-};
-const float = (field, value) => {
-  const body = Buffer.alloc(4);
-  body.writeFloatLE(value);
-  return Buffer.concat([tag(field, 5), body]);
-};
-const varint = (field, value) => Buffer.concat([tag(field, 0), Buffer.from([value])]);
-const text = (field, value) => Buffer.concat([
-  tag(field, 2), Buffer.from([Buffer.byteLength(value)]), Buffer.from(value),
-]);
-
-// A field left undefined is omitted, as an ESPHome server does for proto3
-// zero/false values. An explicit 0 is written, which only tests do.
-const optional = (encode, field, value) => (value === undefined ? [] : [encode(field, value)]);
 
 const valveState = ({ position, operation } = {}) => Buffer.concat([
   fixed32(1, VALVE_KEY),
@@ -80,10 +32,6 @@ const binaryState = ({ state, missingState } = {}) => Buffer.concat([
   ...optional(varint, 3, missingState),
 ]);
 const humidityState = value => Buffer.concat([fixed32(1, HUMIDITY_KEY), float(2, value)]);
-const listed = (key, objectId, name) => Buffer.concat([
-  text(1, objectId), fixed32(2, key), text(3, name),
-]);
-
 const VALVE_ENTITIES = [
   [MESSAGE.LIST_VALVE, listed(VALVE_KEY, 'open_air_valve', 'Valve')],
   [MESSAGE.LIST_BINARY_SENSOR, listed(CLOSED_SENSOR_KEY, 'valve_homing_switch', 'Closed Switch')],
@@ -95,8 +43,6 @@ const COVER_ENTITIES = [
 
 // --- Harness -----------------------------------------------------------------
 
-const clients = [];
-const outbound = [];
 const timers = new Map();
 let timerId = 0;
 const originalSetTimeout = global.setTimeout;
@@ -119,17 +65,6 @@ async function fireTimers(ms) {
   }
 }
 
-async function installClientStubs() {
-  const { EspHomeClient } = await import('esphome-client');
-  EspHomeClient.prototype.connect = function connect() {
-    clients.push(this);
-    setImmediate(() => this.emit('connect', false));
-  };
-  EspHomeClient.prototype.frameAndSend = function frameAndSend(type) {
-    outbound.push(type);
-  };
-}
-
 const flush = async device => {
   for (let i = 0; i < 6; i++) {
     await new Promise(resolve => setImmediate(resolve));
@@ -148,23 +83,13 @@ function createDevice(tile) {
   const device = new ValveDevice();
   const values = { ...tile };
   let available = true;
-  Object.assign(device, {
-    _destroyed: false,
-    _slotTitleFlags: {},
+  stubDevice(device, values, {
     getStore: () => ({ address: 'unused.invalid' }),
     getSettings: () => ({}),
     getSetting: () => null,
-    log() {},
-    error(...args) { throw new Error(args.join(' ')); },
-    homey: { __: key => key },
     getAvailable: () => available,
     setAvailable: async () => { available = true; },
     setUnavailable: async () => { available = false; },
-    hasCapability: key => key in values,
-    addCapability: async key => { values[key] = null; },
-    getCapabilityValue: key => values[key],
-    setCapabilityValue: async (key, value) => { values[key] = value; },
-    setCapabilityOptions: async () => {},
   });
   return { device, values };
 }
@@ -507,12 +432,7 @@ async function main() {
     timers.clear();
   }
 
-  assert.equal(socketConnects, 0, 'no test may open a socket');
-  assert.deepEqual(
-    [...new Set(outbound)],
-    [MESSAGE.SUBSCRIBE_STATES],
-    'no test may send anything except the protocol state subscription',
-  );
+  assertNoHardwareTraffic();
 
   if (failures.length) {
     throw new Error(`${failures.length} of ${tests.length} omitted-default tests failed`);

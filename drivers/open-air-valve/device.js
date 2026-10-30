@@ -2,17 +2,17 @@
 
 const Homey = require('homey');
 const EspHomeClient = require('../../lib/EspHomeClient');
+const applySlotTitles = require('../../lib/slotTitles');
 const { ESPHOME } = require('../../lib/constants');
-const { roundToDecimals, isValveOrCover, SENSOR_TYPES, extractSensorSlot, detectMeasurementType, computeCapabilityId } = require('../../lib/utils');
-
-// Localized base titles per measurement type for slot labeling
-const SLOT_TITLES = {
-  temperature: { en: 'Temperature', nl: 'Temperatuur', fr: 'Température' },
-  humidity:    { en: 'Humidity',    nl: 'Vochtigheid', fr: 'Humidité' },
-  co2:         { en: 'CO2',         nl: 'CO2',         fr: 'CO2' },
-  voc:         { en: 'VOC Index',   nl: 'VOC Index',   fr: 'Indice COV' },
-  nox:         { en: 'NOx Index',   nl: 'NOx Index',   fr: 'Indice NOx' },
-};
+const {
+  roundToDecimals,
+  isValveOrCover,
+  SENSOR_TYPES,
+  extractSensorSlot,
+  detectMeasurementType,
+  computeCapabilityId,
+  storeConnectionSettings,
+} = require('../../lib/utils');
 
 /**
  * Normalize the logical state reported by ESPHome's binary sensor.
@@ -76,19 +76,8 @@ class OpenAirValveDevice extends Homey.Device {
   async onInit() {
     this.log('Open AIR Valve device has been initialized');
 
-    // Entity key mappings (valve-specific, not using shared createEntityKeys)
-    this.entityKeys = {
-      valve: null,        // numeric key of the valve entity
-      closedSensor: null, // numeric key of the "Closed Switch" binary_sensor
-      rehomeButton: null, // numeric key of the "Re-home" button
-      rebootSwitch: null, // numeric key of the "Restart" switch
-      sensorMap: {},      // entityKey → { capabilityId, settingKey, defaultDecimals }
-    };
     this._destroyed = false;
     this._slotTitleFlags = {};
-    this._valvePosition = null;
-    this._valveOperation = null;
-    this._closedSensorState = null;
 
     // Migrate devices paired before the binary valve capability was used.
     await this._migrateValveDevice();
@@ -110,14 +99,15 @@ class OpenAirValveDevice extends Homey.Device {
     const host = store.address || settings.host;
     const port = store.port || settings.port || ESPHOME.DEFAULT_PORT;
 
+    this._clearDiscoveryTimer();
+    this._valveReady = false;
+    this._resetValveMappings();
+
     if (!host) {
       this.setUnavailable(this.homey.__('errors.no_host') || 'No host configured');
       return;
     }
 
-    this._clearDiscoveryTimer();
-    this._valveReady = false;
-    this._resetValveMappings();
     const client = new EspHomeClient({
       host, port,
       encryptionKey: store.encryptionKey || null,
@@ -183,8 +173,13 @@ class OpenAirValveDevice extends Homey.Device {
   }
 
   _resetValveMappings() {
-    this.entityKeys = { valve: null, closedSensor: null, rehomeButton: null,
-      rebootSwitch: null, sensorMap: {} };
+    // Entity key mappings (valve-specific, not using shared createEntityKeys)
+    this.entityKeys = {
+      valve: null,        // numeric key of the valve entity
+      closedSensor: null, // numeric key of the "Closed Switch" binary_sensor
+      rehomeButton: null, // numeric key of the "Re-home" button
+      sensorMap: {},      // entityKey → { capabilityId, settingKey, defaultDecimals }
+    };
     this._valvePosition = null;
     this._valveOperation = null;
     this._closedSensorState = null;
@@ -328,13 +323,6 @@ class OpenAirValveDevice extends Homey.Device {
       return;
     }
 
-    // Map reboot/restart switch
-    if (type === 'switch' && (name.toLowerCase().includes('reboot') || name.toLowerCase().includes('restart'))) {
-      this.entityKeys.rebootSwitch = key;
-      this.log(`Mapped reboot switch: ${name} (key: ${key})`);
-      return;
-    }
-
     // Sensors — reuse unified detection (skip RPM for valve devices)
     if (type !== 'sensor') return;
 
@@ -358,8 +346,7 @@ class OpenAirValveDevice extends Homey.Device {
       }
 
       if (slot != null && slot >= 2) {
-        await this._setSlotTitle(capabilityId, measurementType, slot);
-        await this._ensureSlot1Title(measurementType);
+        await applySlotTitles(this, capabilityId, measurementType, slot);
       }
 
       this.entityKeys.sensorMap[key] = {
@@ -371,49 +358,6 @@ class OpenAirValveDevice extends Homey.Device {
       this.log(`Mapped sensor: ${name} → ${capabilityId} (key: ${key}, slot: ${slot})`);
     } catch (err) {
       this.error(`Failed to map ${measurementType} entity (${name}):`, err);
-    }
-  }
-
-  /**
-   * Set the title for a slot-specific capability.
-   */
-  async _setSlotTitle(capabilityId, measurementType, slot) {
-    const titles = SLOT_TITLES[measurementType];
-    if (!titles) return;
-    try {
-      await this.setCapabilityOptions(capabilityId, {
-        title: {
-          en: `${titles.en} ${slot}`,
-          nl: `${titles.nl} ${slot}`,
-          fr: `${titles.fr} ${slot}`,
-        },
-      });
-    } catch (err) {
-      this.error(`Failed to set title for ${capabilityId}:`, err);
-    }
-  }
-
-  /**
-   * Relabel slot 1 base capability when slot 2+ is discovered.
-   */
-  async _ensureSlot1Title(measurementType) {
-    if (this._slotTitleFlags[measurementType]) return;
-    this._slotTitleFlags[measurementType] = true;
-
-    const baseCapabilityId = SENSOR_TYPES[measurementType].base;
-    const titles = SLOT_TITLES[measurementType];
-    if (!titles || !this.hasCapability(baseCapabilityId)) return;
-
-    try {
-      await this.setCapabilityOptions(baseCapabilityId, {
-        title: {
-          en: `${titles.en} 1`,
-          nl: `${titles.nl} 1`,
-          fr: `${titles.fr} 1`,
-        },
-      });
-    } catch (err) {
-      this.error(`Failed to set slot 1 title for ${baseCapabilityId}:`, err);
     }
   }
 
@@ -578,20 +522,6 @@ class OpenAirValveDevice extends Homey.Device {
   }
 
   /**
-   * Restart the controller.
-   */
-  async restartController() {
-    if (!this.client || !this.client.connected) {
-      throw new Error(this.homey.__('errors.not_connected'));
-    }
-    if (this.entityKeys.rebootSwitch === null) {
-      throw new Error('Reboot switch not found on device');
-    }
-    this.log('Restarting controller');
-    await this.client.setSwitchState(this.entityKeys.rebootSwitch, true);
-  }
-
-  /**
    * Reconnect to the device (used after repair)
    */
   async reconnect({ recovery = false } = {}) {
@@ -604,17 +534,7 @@ class OpenAirValveDevice extends Homey.Device {
       this.client.disconnect();
     }
 
-    this.entityKeys = {
-      valve: null,
-      closedSensor: null,
-      rehomeButton: null,
-      rebootSwitch: null,
-      sensorMap: {},
-    };
     this._slotTitleFlags = {};
-    this._valvePosition = null;
-    this._valveOperation = null;
-    this._closedSensorState = null;
 
     await this._initializeClient();
   }
@@ -622,23 +542,7 @@ class OpenAirValveDevice extends Homey.Device {
   async onSettings({ oldSettings, newSettings, changedKeys }) {
     this.log('Settings changed:', changedKeys);
 
-    const connectionKeys = ['host', 'port', 'encryptionKey', 'password'];
-    const connectionChanged = changedKeys.some(key => connectionKeys.includes(key));
-
-    if (connectionChanged) {
-      if (changedKeys.includes('host')) {
-        await this.setStoreValue('address', newSettings.host);
-      }
-      if (changedKeys.includes('port')) {
-        await this.setStoreValue('port', newSettings.port);
-      }
-      if (changedKeys.includes('encryptionKey')) {
-        await this.setStoreValue('encryptionKey', newSettings.encryptionKey || null);
-      }
-      if (changedKeys.includes('password')) {
-        await this.setStoreValue('password', newSettings.password || null);
-      }
-
+    if (await storeConnectionSettings(this, newSettings, changedKeys)) {
       await this.reconnect();
     }
   }
