@@ -64,5 +64,10 @@
     "en": "A fan that reports off or speed 0 now updates correctly, and sensor readings of 0, such as a stopped fan's RPM, are no longer lost.",
     "nl": "Een ventilator die uit of snelheid 0 meldt, wordt nu correct bijgewerkt, en sensorwaarden van 0, zoals het toerental van een stilstaande ventilator, gaan niet langer verloren.",
     "fr": "Un ventilateur signalant l’arrêt ou la vitesse 0 est désormais correctement mis à jour, et les mesures à 0, comme le régime d’un ventilateur à l’arrêt, ne sont plus perdues."
+  },
+  "1.4.4": {
+    "en": "Valve temperature now always shows the room reading. It no longer jumps to the controller's chip temperature.",
+    "nl": "De kleptemperatuur toont nu altijd de kamerwaarde en springt niet langer naar de chiptemperatuur van de controller.",
+    "fr": "La température de la vanne affiche désormais toujours la mesure de la pièce et ne saute plus à la température de la puce du contrôleur."
   }
 }

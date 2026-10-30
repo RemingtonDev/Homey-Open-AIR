@@ -23,6 +23,8 @@ function createDevice(Driver, values = {}) {
     setStoreValue: async (key, value) => { store[key] = value; },
     getStore: () => ({}),
     getSettings: () => ({}),
+    getAvailable: () => true,
+    setAvailable: async () => {},
     setUnavailable: async () => {},
   });
   return { device, values, options, errors, store };
@@ -71,6 +73,19 @@ for (const [label, Driver] of [['Mini', MiniDevice], ['Valve', ValveDevice]]) {
       'Failed to set slot 1 title for measure_humidity:',
     ]);
     assert.equal(device.entityKeys.sensorMap[1].capabilityId, 'measure_humidity.2');
+  });
+
+  test(`${label}: chip temperature never reaches the room temperature tile`, async () => {
+    const { device, values } = createDevice(Driver, { measure_temperature: 20 });
+    device.getSetting = () => 1;
+    const air = sensor('Open AIR Valve 1 Temperature', 1);
+    const chip = sensor('Open AIR Valve 1 MCU Temperature', 2);
+    await device._mapEntity(air);
+    await device._mapEntity(chip);
+    await device._handleStateChange('sensor', air, { state: 26.6 });
+    await device._handleStateChange('sensor', chip, { state: 47.2 });
+    assert.equal(values.measure_temperature, 26.6);
+    assert.equal(device.entityKeys.sensorMap[2], undefined);
   });
 
   test(`${label}: connection settings are stored, then reconnected once`, async () => {
