@@ -271,7 +271,9 @@ async function testMissDetector() {
   assert.equal(miss.connected, true);
   assert.equal(miss.apiVersion, 'modern');
   assert.equal(miss.valveOperation, 'opening');
-  assert.ok(miss.lastSensorAgeMs >= 0 && miss.lastHeartbeatAgeMs >= 0 && miss.lastValveReportAgeMs >= 0);
+  for (const age of [miss.lastSensorAgeMs, miss.lastHeartbeatAgeMs, miss.lastValveReportAgeMs]) {
+    assert.equal(typeof age, 'number');
+  }
   assert.equal(device.values.onoff, false, 'the detector changes no state');
 
   // The final IDLE arriving in time cancels it.
@@ -322,11 +324,37 @@ async function testMissDetector() {
   }
 }
 
+async function testAppStart() {
+  Module._load = function load(request) {
+    if (request === 'homey') {
+      return { App: class { log() {} error() {} } };
+    }
+    return originalLoad.apply(this, arguments);
+  };
+  const App = require('../app');
+  Module._load = originalLoad;
+
+  const seen = [];
+  const app = new App();
+  app.homey = {
+    manifest: { version: '9.9.9' },
+    flow: { getActionCard: () => ({ registerRunListener() {} }) },
+  };
+  await app.onInit();
+  diagnostics.setSink(entry => seen.push(entry));
+  assert.ok(seen.some(entry => entry.event === 'app_start' && entry.version === '9.9.9'));
+
+  // The journal must not be able to stop the app from starting.
+  delete app.homey.manifest;
+  await assert.doesNotReject(app.onInit());
+}
+
 async function main() {
   testJournalFile();
   testSink();
   testNoSecretsAndIdentity();
   await testAdapterVisibility();
+  await testAppStart();
   fakeTimers();
   await testValveRecords();
   await testMissDetector();

@@ -22,7 +22,7 @@ class OpenAirApp extends Homey.App {
       onError: error => this.error('Connection journal write failed:', error),
     });
     diagnostics.setSink(entry => journal.write(entry));
-    diagnostics.record('app_start', { version: this.homey.manifest.version, pid: process.pid });
+    diagnostics.record('app_start', { version: this.homey.manifest?.version, pid: process.pid });
   }
 
   _registerFatalDiagnostics() {
