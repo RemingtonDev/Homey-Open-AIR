@@ -98,6 +98,7 @@ function stubDevice(device, values, overrides = {}) {
   return Object.assign(device, {
     _destroyed: false,
     _slotTitleFlags: {},
+    getName: () => 'Test device',
     log() {},
     error(...args) { throw new Error(args.join(' ')); },
     homey: { __: key => key },

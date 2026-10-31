@@ -1,6 +1,7 @@
 'use strict';
 
 const Homey = require('homey');
+const ConnectionJournal = require('./lib/connectionJournal');
 const diagnostics = require('./lib/runtimeDiagnostics');
 const { getHighestHumidityReading } = require('./lib/utils');
 
@@ -11,8 +12,17 @@ class OpenAirApp extends Homey.App {
   async onInit() {
     this.log('Open AIR app has been initialized');
 
+    this._startConnectionJournal();
     this._registerFatalDiagnostics();
     this._registerFlowCards();
+  }
+
+  _startConnectionJournal() {
+    const journal = new ConnectionJournal({
+      onError: error => this.error('Connection journal write failed:', error),
+    });
+    diagnostics.setSink(entry => journal.write(entry));
+    diagnostics.record('app_start', { version: this.homey.manifest.version, pid: process.pid });
   }
 
   _registerFatalDiagnostics() {
@@ -22,6 +32,7 @@ class OpenAirApp extends Homey.App {
     fatalDiagnosticsRegistered = true;
 
     process.on('uncaughtExceptionMonitor', (error, origin) => {
+      diagnostics.record('app_fatal', { type: 'uncaughtException', origin, error });
       this.error(
         'Fatal uncaught exception observed:',
         diagnostics.stringifyFatalReport('uncaughtExceptionMonitor', error, { origin }),
@@ -30,6 +41,7 @@ class OpenAirApp extends Homey.App {
 
     process.on('unhandledRejection', (reason) => {
       const error = reason instanceof Error ? reason : new Error(String(reason));
+      diagnostics.record('app_fatal', { type: 'unhandledRejection', error });
       this.error(
         'Unhandled rejection observed:',
         diagnostics.stringifyFatalReport('unhandledRejection', error),
