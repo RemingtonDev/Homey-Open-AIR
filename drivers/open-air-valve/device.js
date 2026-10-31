@@ -2,6 +2,7 @@
 
 const Homey = require('homey');
 const EspHomeClient = require('../../lib/EspHomeClient');
+const diagnostics = require('../../lib/runtimeDiagnostics');
 const applySlotTitles = require('../../lib/slotTitles');
 const { ESPHOME } = require('../../lib/constants');
 const {
@@ -65,6 +66,10 @@ function parseValveOperation(state) {
   return null;
 }
 
+// A re-home reaches its final IDLE report about 4 seconds after the switch.
+const REHOME_REPORT_WAIT_MS = 30000;
+const OWN_CLOSE_COMMAND_WINDOW_MS = 60000;
+
 function valveEndpointFromPosition(position) {
   if (position <= 0.01) return false;
   if (position >= 0.99) return true;
@@ -72,6 +77,34 @@ function valveEndpointFromPosition(position) {
 }
 
 class OpenAirValveDevice extends Homey.Device {
+
+  /**
+   * Write one line to the connection journal. Each line carries the sensor
+   * reports since the previous one, which shows the link was alive between
+   * lines without journalling every sensor value.
+   */
+  _journal(event, details = {}) {
+    try {
+      diagnostics.record(event, {
+        device: this.getName(),
+        sensorReports: this._sensorReports || 0,
+        ...details,
+      });
+      this._sensorReports = 0;
+    } catch (_) {
+      // Diagnostics must never affect the valve.
+    }
+  }
+
+  async setAvailable() {
+    this._journal('availability', { available: true });
+    return super.setAvailable();
+  }
+
+  async setUnavailable(message) {
+    this._journal('availability', { available: false, message });
+    return super.setUnavailable(message);
+  }
 
   async onInit() {
     this.log('Open AIR Valve device has been initialized');
@@ -113,15 +146,22 @@ class OpenAirValveDevice extends Homey.Device {
       encryptionKey: store.encryptionKey || null,
       password: store.password || null,
       diagnosticsLabel: 'open-air-valve-runtime',
+      diagnosticsDevice: this.getName(),
       logger: this,
     });
     this.client = client;
     const current = () => !this._destroyed && this.client === client;
     let epoch = 0;
-    const enqueue = (work) => {
+    const enqueue = (work, label) => {
       const eventEpoch = epoch;
       this._entityQueue = (this._entityQueue || Promise.resolve()).then(async () => {
-        if (!current() || eventEpoch !== epoch) return;
+        if (!current() || eventEpoch !== epoch) {
+          this._journal('valve_report_dropped', {
+            ...label,
+            reason: current() ? 'stale connection' : 'client replaced',
+          });
+          return;
+        }
         await work();
         if (current() && eventEpoch === epoch) await this._updateValveReadiness();
       }).catch(error => this.error('Valve discovery/state processing failed:', error));
@@ -138,7 +178,7 @@ class OpenAirValveDevice extends Homey.Device {
         const entities = client.getEntities();
         for (const entity of entities) await this._mapEntity(entity);
         await this._replayInitialStates(entities);
-      });
+      }, { source: 'connected' });
       this._scheduleDiscoveryRecovery(client);
     });
     client.on('disconnected', () => {
@@ -159,9 +199,10 @@ class OpenAirValveDevice extends Homey.Device {
     client.on('entityDiscovered', entity => enqueue(async () => {
       await this._mapEntity(entity);
       await this._replayInitialStates([entity]);
-    }));
+    }, { source: 'entityDiscovered', entity: entity.name }));
     client.on('stateChanged', ({ type, entity, state }) =>
-      enqueue(() => this._handleStateChange(type, entity, state)));
+      enqueue(() => this._handleStateChange(type, entity, state),
+        { source: 'stateChanged', type, entity: entity?.name }));
     try {
       await client.connect();
     } catch (error) {
@@ -204,6 +245,7 @@ class OpenAirValveDevice extends Homey.Device {
     if (this._destroyed || this._valveReady || this._discoveryTimer) return;
     const attempts = this._discoveryAttempts || 0;
     if (attempts >= 3) {
+      this._journal('discovery_gave_up', { attempts });
       this.setUnavailable('Valve discovery incomplete after 3 retries; reconnect or repair device')
         .catch(this.error.bind(this));
       return;
@@ -213,6 +255,7 @@ class OpenAirValveDevice extends Homey.Device {
       if (this._destroyed || this.client !== client || this._valveReady) return;
       this._discoveryAttempts = attempts + 1;
       this.log(`Retrying incomplete valve discovery (${this._discoveryAttempts}/3)`);
+      this._journal('discovery_retry', { attempt: this._discoveryAttempts });
       try { await this.reconnect({ recovery: true }); }
       catch (error) { this.error('Valve discovery retry failed:', error); }
     }, ESPHOME.CONNECTION_TIMEOUT_MS * (attempts + 1));
@@ -274,7 +317,7 @@ class OpenAirValveDevice extends Homey.Device {
   async _replayInitialStates(entities) {
     for (const entity of entities) {
       if (!entity || entity.state === null || entity.state === undefined) continue;
-      await this._handleStateChange(entity.type, entity, entity.state);
+      await this._handleStateChange(entity.type, entity, entity.state, { replayed: true });
     }
   }
 
@@ -364,10 +407,23 @@ class OpenAirValveDevice extends Homey.Device {
   /**
    * Handle state changes from ESPHome
    */
-  async _handleStateChange(type, entity, state) {
+  async _handleStateChange(type, entity, state, { replayed = false } = {}) {
     const key = entity?.key;
 
     this.log(`State change for key ${key} (${type}):`, state);
+
+    if (isValveOrCover(type) || type === 'binary_sensor') {
+      this._lastValveReportAt = Date.now();
+      this._journal('valve_report_received', {
+        type,
+        entity: entity?.name,
+        replayed,
+        position: state?.position,
+        operation: state?.currentOperation ?? state?.current_operation,
+        state: state?.state,
+        missingState: state?.missingState,
+      });
+    }
 
     try {
       // The valve entity publishes endpoint position and movement completion.
@@ -385,6 +441,7 @@ class OpenAirValveDevice extends Homey.Device {
 
         this._closedSensorState = closed;
         if (closed) {
+          this._watchForRehomeReport();
           await this._setResolvedValveState(false, 'closed switch');
         } else {
           const endpoint = valveEndpointFromPosition(this._valvePosition);
@@ -400,6 +457,8 @@ class OpenAirValveDevice extends Homey.Device {
         const mapping = this.entityKeys.sensorMap[key];
         if (!mapping) return;
         if (typeof state.state === 'number' && !state.missingState) {
+          this._sensorReports = (this._sensorReports || 0) + 1;
+          this._lastSensorAt = Date.now();
           const configuredDecimals = mapping.settingKey ? this.getSetting(mapping.settingKey) : null;
           const parsedDecimals = Number.parseInt(configuredDecimals, 10);
           const decimals = mapping.settingKey && Number.isInteger(parsedDecimals)
@@ -410,6 +469,7 @@ class OpenAirValveDevice extends Homey.Device {
       }
     } catch (error) {
       this.error('Error updating capability:', error);
+      this._journal('valve_write_failed', { type, entity: entity?.name, error });
     }
   }
 
@@ -426,6 +486,7 @@ class OpenAirValveDevice extends Homey.Device {
     const endpoint = valveEndpointFromPosition(position);
     this._valvePosition = position;
     this._valveOperation = operation;
+    if (operation === 'idle') this._clearRehomeWatch();
 
     this.log('Valve telemetry:', {
       position,
@@ -448,6 +509,11 @@ class OpenAirValveDevice extends Homey.Device {
    */
   async _setResolvedValveState(isOpen, source) {
     this.log(`Resolved valve state: ${isOpen ? 'Open' : 'Closed'} (${source})`);
+    this._journal('valve_resolved', {
+      open: isOpen,
+      source,
+      onoffBefore: this.hasCapability('onoff') ? this.getCapabilityValue('onoff') : null,
+    });
 
     if (this.hasCapability('onoff') && this.getCapabilityValue('onoff') !== isOpen) {
       await this.setCapabilityValue('onoff', isOpen);
@@ -464,6 +530,50 @@ class OpenAirValveDevice extends Homey.Device {
   }
 
   /**
+   * Note a re-home that never reports back. During a re-home the valve keeps
+   * reporting position 1 and only the final IDLE returns Homey to Open, so the
+   * closed switch at position 1 with no IDLE after it is what a miss looks
+   * like. This only writes a line and changes no state.
+   */
+  _watchForRehomeReport() {
+    const recentOwnClose = Date.now() - (this._lastCloseCommandAt || 0) < OWN_CLOSE_COMMAND_WINDOW_MS;
+    if (this._rehomeWatch || recentOwnClose || !(this._valvePosition >= 0.99)) return;
+
+    this._rehomeWatch = setTimeout(() => {
+      this._rehomeWatch = null;
+      this._reportMissingRehomeReport();
+    }, REHOME_REPORT_WAIT_MS);
+  }
+
+  _clearRehomeWatch() {
+    if (this._rehomeWatch) clearTimeout(this._rehomeWatch);
+    this._rehomeWatch = null;
+  }
+
+  _reportMissingRehomeReport() {
+    const now = Date.now();
+    const age = time => (time ? now - time : null);
+    const client = this.client;
+
+    this._journal('rehome_no_final_report', {
+      connected: Boolean(client?.connected),
+      apiVersion: client?.apiVersion,
+      valvePosition: this._valvePosition,
+      valveOperation: this._valveOperation,
+      lastValveReportAgeMs: age(this._lastValveReportAt),
+      lastSensorAgeMs: age(this._lastSensorAt),
+      lastHeartbeatAgeMs: age(client?.lastHeartbeatAt),
+      cachedValveState: client?.getEntityByKey(this.entityKeys.valve)?.state,
+    });
+  }
+
+  async _sendValvePosition(position) {
+    if (position === 0) this._lastCloseCommandAt = Date.now();
+    this._journal('valve_command', { position });
+    await this.client.setValvePosition(this.entityKeys.valve, position);
+  }
+
+  /**
    * Register capability listeners for user interactions
    */
   _registerCapabilityListeners() {
@@ -477,7 +587,7 @@ class OpenAirValveDevice extends Homey.Device {
       }
       this._requireValveEntity();
       this.log(`${isOpen ? 'Opening' : 'Closing'} valve`);
-      await this.client.setValvePosition(this.entityKeys.valve, isOpen ? 1.0 : 0.0);
+      await this._sendValvePosition(isOpen ? 1.0 : 0.0);
     });
   }
 
@@ -492,7 +602,7 @@ class OpenAirValveDevice extends Homey.Device {
     }
     this._requireValveEntity();
     this.log('Opening valve fully');
-    await this.client.setValvePosition(this.entityKeys.valve, 1.0);
+    await this._sendValvePosition(1.0);
   }
 
   /**
@@ -504,7 +614,7 @@ class OpenAirValveDevice extends Homey.Device {
     }
     this._requireValveEntity();
     this.log('Closing valve fully');
-    await this.client.setValvePosition(this.entityKeys.valve, 0.0);
+    await this._sendValvePosition(0.0);
   }
 
   /**
@@ -518,6 +628,7 @@ class OpenAirValveDevice extends Homey.Device {
       throw new Error(this.homey.__('errors.no_rehome_button') || 'Re-home button not found');
     }
     this.log('Re-homing valve');
+    this._journal('rehome_command');
     await this.client.pressButton(this.entityKeys.rehomeButton);
   }
 
@@ -552,6 +663,7 @@ class OpenAirValveDevice extends Homey.Device {
     this._destroyed = true;
     this._valveReady = false;
     this._clearDiscoveryTimer();
+    this._clearRehomeWatch();
 
     if (this.client) {
       this.client.disconnect();
@@ -564,6 +676,7 @@ class OpenAirValveDevice extends Homey.Device {
     this._destroyed = true;
     this._valveReady = false;
     this._clearDiscoveryTimer();
+    this._clearRehomeWatch();
 
     if (this.client) {
       this.client.disconnect();

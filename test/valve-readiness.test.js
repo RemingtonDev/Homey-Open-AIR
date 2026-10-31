@@ -37,7 +37,7 @@ async function fixture(entities = []) {
   Object.assign(d, {
     _destroyed: false, _slotTitleFlags: {},
     getStore: () => ({ address: 'unused.invalid' }), getSettings: () => ({}),
-    getSetting: () => null, log() {}, error() {},
+    getSetting: () => null, getName: () => 'Test valve', log() {}, error() {},
     homey: { __: key => key },
     getAvailable: () => available,
     setAvailable: async () => { available = true; },
