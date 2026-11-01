@@ -157,6 +157,18 @@ async function testModernAdapterTracksEveryIncomingMessage() {
   adapter.disconnect();
 }
 
+async function testRealConnectStartsTheWatch() {
+  await installClientStubs();
+  const wrapper = new Wrapper({ host: 'unused.invalid', logger: { log() {}, error() {} } });
+  Wrapper.apiVersionCache.set(wrapper.deviceKey, 'modern');
+  await wrapper.connect();
+  assert.equal(wrapper.connected, true);
+  assert.ok(wrapper._linkWatch);
+  wrapper.disconnect();
+  assert.equal(wrapper._linkWatch, null);
+  Wrapper.clearVersionCache();
+}
+
 async function main() {
   testHealthyLinkIsNotPinged();
   testFreshConnectionGetsTheFullQuietPeriod();
@@ -167,6 +179,7 @@ async function main() {
   testRetiredAdapterIsIgnored();
   testAdapterWithoutPingIsNotWatched();
   await testModernAdapterTracksEveryIncomingMessage();
+  await testRealConnectStartsTheWatch();
   Date.now = realNow;
   console.log('link watch tests passed');
 }
