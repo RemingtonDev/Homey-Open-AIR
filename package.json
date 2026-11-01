@@ -1,10 +1,10 @@
 {
   "name": "com.remingtondev.open-air-mini",
-  "version": "1.4.5",
+  "version": "1.4.6",
   "description": "Homey app for controlling Open AIR ventilation devices via ESPHome",
   "scripts": {
     "postinstall": "patch-package --error-on-fail",
-    "test": "node test/discovery-routing.test.js && node test/legacy-frame-parser.test.js && node test/legacy-crash-guard.test.js && node test/humidity-reading.test.js && node test/valve-state-sync.test.js && node test/valve-readiness.test.js && node test/omitted-protocol-defaults.test.js && node test/omitted-fan-sensor-defaults.test.js && node test/shared-device-behaviour.test.js && node test/connection-journal.test.js"
+    "test": "node test/discovery-routing.test.js && node test/legacy-frame-parser.test.js && node test/legacy-crash-guard.test.js && node test/humidity-reading.test.js && node test/valve-state-sync.test.js && node test/valve-readiness.test.js && node test/omitted-protocol-defaults.test.js && node test/omitted-fan-sensor-defaults.test.js && node test/shared-device-behaviour.test.js && node test/connection-journal.test.js && node test/link-watch.test.js"
   },
   "main": "app.js",
   "license": "GPL-3.0-only",

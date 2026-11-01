@@ -172,6 +172,7 @@ class OpenAirValveDevice extends Homey.Device {
       if (!current()) return;
       epoch++;
       this._valveReady = false;
+      this._uptimeJournalled = false;
       this.setUnavailable('Discovering valve control and position').catch(this.error.bind(this));
       enqueue(async () => {
         this._resetValveMappings();
@@ -454,6 +455,7 @@ class OpenAirValveDevice extends Homey.Device {
 
       // Sensors via sensorMap
       if (type === 'sensor') {
+        this._journalUptimeAfterConnect(entity, state);
         const mapping = this.entityKeys.sensorMap[key];
         if (!mapping) return;
         if (typeof state.state === 'number' && !state.missingState) {
@@ -471,6 +473,17 @@ class OpenAirValveDevice extends Homey.Device {
       this.error('Error updating capability:', error);
       this._journal('valve_write_failed', { type, entity: entity?.name, error });
     }
+  }
+
+  /**
+   * The first uptime after a connect shows whether the device restarted while
+   * the link was down. A restart also resets its re-home timer.
+   */
+  _journalUptimeAfterConnect(entity, state) {
+    if (this._uptimeJournalled || !/uptime/i.test(entity?.name || '')) return;
+    if (typeof state.state !== 'number' || state.missingState) return;
+    this._uptimeJournalled = true;
+    this._journal('device_uptime_after_connect', { uptimeSeconds: Math.round(state.state) });
   }
 
   /**

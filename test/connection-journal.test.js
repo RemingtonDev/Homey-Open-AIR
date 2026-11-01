@@ -324,6 +324,27 @@ async function testMissDetector() {
   }
 }
 
+async function testUptimeAfterConnect() {
+  const device = await readyDevice();
+  const uptime = { key: 4, name: 'Open AIR Valve 3 Uptime', type: 'sensor' };
+  const uptimeLines = () => lines.filter(line => line.event === 'device_uptime_after_connect');
+
+  await emitState(device, humidity, { state: 51 });
+  await emitState(device, uptime, { state: 0, missingState: true });
+  assert.equal(uptimeLines().length, 0);
+
+  await emitState(device, uptime, { state: 2280.6 });
+  await emitState(device, uptime, { state: 2340.6 });
+  assert.equal(uptimeLines().length, 1, 'one line per connection');
+  assert.equal(uptimeLines()[0].uptimeSeconds, 2281);
+  assert.equal(uptimeLines()[0].device, 'Valve WC Test');
+
+  device.client.emit('connected');
+  await device._entityQueue;
+  await emitState(device, uptime, { state: 5 });
+  assert.equal(uptimeLines().length, 2, 'a new connection records it again');
+}
+
 async function testAppStart() {
   Module._load = function load(request) {
     if (request === 'homey') {
@@ -358,6 +379,7 @@ async function main() {
   fakeTimers();
   await testValveRecords();
   await testMissDetector();
+  await testUptimeAfterConnect();
   realTimers();
   console.log('connection journal tests passed');
 }
