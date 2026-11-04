@@ -37,7 +37,7 @@
     "no_fan_entity": "Entité ventilateur introuvable sur l'appareil",
     "not_connected": "Non connecté à l'appareil",
     "no_humidity": "Aucune mesure d'humidité disponible",
-    "no_valve_entity": "Entite vanne introuvable sur l'appareil",
+    "no_valve_entity": "Entité vanne introuvable sur l'appareil",
     "no_rehome_button": "Bouton de recalibration introuvable sur l'appareil"
   },
   "settings": {
