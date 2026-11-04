@@ -7,7 +7,7 @@
   "hint": {
     "en": "Triggers the re-home (recalibration) sequence on the valve.",
     "nl": "Start de herkalibratie van de klep.",
-    "fr": "Declenche la sequence de recalibration de la vanne."
+    "fr": "Déclenche la séquence de recalibration de la vanne."
   },
   "args": [
     {

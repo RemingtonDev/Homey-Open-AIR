@@ -69,5 +69,15 @@
     "en": "Valve temperature now always shows the room reading. It no longer jumps to the controller's chip temperature.",
     "nl": "De kleptemperatuur toont nu altijd de kamerwaarde en springt niet langer naar de chiptemperatuur van de controller.",
     "fr": "La température de la vanne affiche désormais toujours la mesure de la pièce et ne saute plus à la température de la puce du contrôleur."
+  },
+  "1.4.5": {
+    "en": "The app now keeps a local log of valve connections and position reports, which helps diagnose a missed re-home or a lost connection.",
+    "nl": "De app houdt nu lokaal een logboek bij van klepverbindingen en positiemeldingen, om een gemiste herkalibratie of een verbroken verbinding te kunnen onderzoeken.",
+    "fr": "L’application conserve désormais un journal local des connexions et des positions des vannes, pour diagnostiquer une recalibration manquée ou une connexion perdue."
+  },
+  "1.4.6": {
+    "en": "A device that stops responding while still appearing connected is now detected within about three minutes and reconnected automatically. Before, a valve could stay silently unreachable for hours and miss commands. French texts now have their missing accents.",
+    "nl": "Een apparaat dat niet meer reageert maar verbonden lijkt, wordt nu binnen ongeveer drie minuten gedetecteerd en automatisch opnieuw verbonden. Voorheen kon een klep urenlang onopgemerkt onbereikbaar blijven en opdrachten missen. Franse teksten hebben nu hun ontbrekende accenten.",
+    "fr": "Un appareil qui ne répond plus tout en paraissant connecté est désormais détecté en trois minutes environ et reconnecté automatiquement. Auparavant, une vanne pouvait rester injoignable pendant des heures sans que rien ne le signale et manquer des commandes. Les accents manquants des textes français ont été ajoutés."
   }
 }

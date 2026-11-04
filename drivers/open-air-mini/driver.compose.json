@@ -183,7 +183,7 @@
           "id": "auto_curve_low_speed",
           "type": "number",
           "label": { "en": "Fan speed below medium humidity (%)", "nl": "Ventilatorsnelheid onder middelhoge vochtigheid (%)", "fr": "Vitesse sous humidité moyenne (%)" },
-          "hint": { "en": "Fan speed when humidity is below the medium threshold", "nl": "Ventilatorsnelheid wanneer de vochtigheid onder de middelhoge drempel ligt", "fr": "Vitesse du ventilateur lorsque l'humidité sous le seuil moyen" },
+          "hint": { "en": "Fan speed when humidity is below the medium threshold", "nl": "Ventilatorsnelheid wanneer de vochtigheid onder de middelhoge drempel ligt", "fr": "Vitesse du ventilateur lorsque l'humidité est sous le seuil moyen" },
           "value": 25,
           "min": 0,
           "max": 100,
